@@ -30,6 +30,8 @@ class HomeController extends GetxController {
   var lastCommand = commands.stop;
   var currentState = states.stopped;
   var currentMode = modes.capture;
+  var stateChanged = false;
+  var modeChanged = false;
   var sensor = Sensor();
   StreamSubscription subscription;
   var aList = List<SensorModel>();
@@ -37,13 +39,13 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // aList.add(SensorModel(
-    //   channel: 0,
-    //   timeStamp: DateTime.now(),
-    //   value: 0,
-    // ));
-    sensor.startStream(100);
-    //subscription = listenToStream();
+    sensor.startStream(
+      amplitude: 5.0,
+      maxCount: -1,
+      offset: 0.0,
+      period: 8.0,
+      samplePeriod: 50,
+    );
   }
 
   void initStream() {
@@ -54,7 +56,6 @@ class HomeController extends GetxController {
 
   StreamSubscription<double> listenToStream() {
     return sensor.sensorStream.listen((x) {
-      print('listen to timedCounter1 $x');
       var record = SensorModel(
         channel: 0,
         timeStamp: DateTime.now(),
@@ -67,7 +68,8 @@ class HomeController extends GetxController {
 
   void stateMan({commands command, modes mode}) {
     lastCommand = command;
-
+    var prevState = currentState;
+    var prevMode = currentMode;
     switch (currentState) {
       case states.stopped:
         currentMode = mode;
@@ -102,6 +104,28 @@ class HomeController extends GetxController {
         currentState = states.stopped;
         break;
     }
+    stateChanged = prevState == currentState ? false : true;
+    modeChanged = prevMode == currentMode ? false : true;
+  }
+
+  void stateExecute({bool modeChanged, bool stateChanged}) {
+    if (!stateChanged) return;
+    switch (currentState) {
+      case states.stopped:
+        subscription.pause();
+        break;
+      case states.waiting:
+        break;
+      case states.capturing:
+        subscription.resume();
+        break;
+      case states.persisting:
+        subscription.resume();
+        break;
+      default:
+        break;
+    }
+    stateChanged = false;
   }
 
   List<charts.Series<SensorModel, DateTime>> getSeriesList() {
@@ -110,14 +134,43 @@ class HomeController extends GetxController {
         id: 'dummy',
         domainFn: (SensorModel dataPoint, _) => dataPoint.timeStamp,
         measureFn: (SensorModel dataPoint, _) => dataPoint.value,
-        //data: sensor.getDummyData(30),
-        data: aList,
+        //return last x records from list
+        data: returnEnd(),
       ),
     ];
   }
 
-  void updateData() {
-    //sensor.updateDummyData2(30);
-    //update();
+  List<SensorModel> returnEnd() {
+    var len = aList.length;
+    var zoom = 40;
+    if (zoom <= len) {
+      return aList.sublist(len - zoom);
+    } else
+      return aList;
+  }
+
+  void handleStopGo() {
+    if (subscription.isPaused) {
+      subscription.resume();
+    } else {
+      subscription.pause();
+    }
+  }
+
+  var cmndButton = false;
+  static const run = 'Run';
+  static const stop = 'Stop';
+  var cmndText = 'Run'.obs;
+
+  void handleCmndPressed() {
+    if (cmndText.value == run) {
+      cmndText.value = stop;
+      stateMan(command: commands.stop, mode: currentMode);
+      stateExecute(modeChanged: modeChanged, stateChanged: stateChanged);
+    } else {
+      cmndText.value = run;
+      stateMan(command: commands.run, mode: currentMode);
+      stateExecute(modeChanged: modeChanged, stateChanged: stateChanged);
+    }
   }
 }

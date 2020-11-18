@@ -17,8 +17,8 @@ class Home extends GetWidget<HomeController> {
       drawer: menu(),
       body: getBody(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => controller.updateData(),
-        child: Icon(Icons.add),
+        onPressed: () => controller.handleStopGo(),
+        child: Icon(Icons.toggle_on),
       ),
     );
   }
@@ -84,6 +84,27 @@ class Home extends GetWidget<HomeController> {
             },
           ),
         ),
+        SizedBox(
+          height: 20,
+        ),
+        Row(
+          children: [
+            FlatButton(
+              child: Text('aaaa'),
+              onPressed: () {},
+            ),
+            RaisedButton(
+              child: Obx(() => Text(controller.cmndText())),
+              onPressed: () => controller.handleCmndPressed(),
+              color: Colors.blueGrey[600],
+              elevation: 15.0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                side: BorderSide(color: Colors.grey[600]),
+              ),
+            ),
+          ],
+        )
       ],
     );
   }
