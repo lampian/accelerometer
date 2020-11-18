@@ -1,12 +1,14 @@
 import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/controllers/home_controller.dart';
 import 'package:accelerometer/utils/root.dart';
+import 'package:charts_flutter/flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class Home extends GetWidget<HomeController> {
   Widget build(BuildContext context) {
+    controller.initStream();
     return Scaffold(
       appBar: AppBar(
         title: Text('title'),
@@ -14,6 +16,10 @@ class Home extends GetWidget<HomeController> {
       ),
       drawer: menu(),
       body: getBody(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => controller.updateData(),
+        child: Icon(Icons.add),
+      ),
     );
   }
 
@@ -61,5 +67,76 @@ class Home extends GetWidget<HomeController> {
     );
   }
 
-  getBody() {}
+  getBody() {
+    return Column(
+      children: [
+        SizedBox(
+          height: 20,
+        ),
+        SizedBox(
+          height: 200,
+          child: GetBuilder<HomeController>(
+            builder: (value) {
+              return SizedBox(
+                height: 100,
+                child: barChart(0),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  TimeSeriesChart barChart(int index) {
+    TimeSeriesChart aTSC = TimeSeriesChart(
+      controller.getSeriesList(),
+      animate: false,
+      behaviors: [
+        // ChartTitle(
+        //   'r1000',
+        //   titleStyleSpec: TextStyleSpec(color: Color.white),
+        // ),
+        ChartTitle(
+          'test', //controller.chs[index].toString(),
+          behaviorPosition: BehaviorPosition.start,
+          titleStyleSpec: TextStyleSpec(color: Color.white),
+        ),
+        //SelectNearest(),
+        //DomainHighlighter(),
+        //PanAndZoomBehavior(), not working well, cannot zoom right
+      ],
+      // Optionally pass in a [DateTimeFactory] used by the chart.
+      // The factory should create the same type of [DateTime] as
+      // the data provided. If none specified, the default creates
+      // local date time.
+      //dateTimeFactory: LocalDateTimeFactory(),
+
+      // Customizes the date tick formatter. It will print the
+      // day of month as the default format, but include the
+      // month and year if it transitions to a new month.
+      // minute, hour, day, month, and year are all provided
+      // by default and you can override them following this
+      // pattern.
+      // domainAxis: DateTimeAxisSpec(
+      //   tickFormatterSpec: AutoDateTimeTickFormatterSpec(
+      //     day: TimeFormatterSpec(format: 'd', transitionFormat: 'MM/dd/yyyy'),
+      //   ),
+      // ),
+      primaryMeasureAxis: NumericAxisSpec(
+        renderSpec: GridlineRendererSpec(
+            // Tick and Label styling here.
+            labelStyle: TextStyleSpec(
+                fontSize: 12, // size in Pts.
+                color: MaterialPalette.white),
+            // Change the line colors to match text color.
+            lineStyle: LineStyleSpec(
+              color: MaterialPalette.black,
+              thickness: 1,
+            )),
+        //viewport: NumericExtents(1, 30),
+      ),
+    );
+    return aTSC;
+  }
 }
