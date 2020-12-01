@@ -23,7 +23,7 @@ class Sensor {
     void tick(Timer timer) {
       var modDV = domainVal % period;
       var measureVal;
-      var randNumber = rng.nextDouble() * 1.5;
+      var randNumber = (rng.nextDouble() - 0.5) * amplitude * 1.5;
       if (modDV <= period / 4) {
         measureVal = amplitude / 2 * modDV + randNumber;
       } else if (modDV <= 3 * period / 4) {

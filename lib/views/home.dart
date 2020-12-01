@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 
 class Home extends GetWidget<HomeController> {
   Widget build(BuildContext context) {
-    controller.initStream();
+    controller.initController();
     return Scaffold(
       appBar: AppBar(
         title: Text('title'),
@@ -16,10 +16,10 @@ class Home extends GetWidget<HomeController> {
       ),
       drawer: menu(),
       body: getBody(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => controller.handleStopGo(),
-        child: Icon(Icons.toggle_on),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () => controller.handleStopGo(),
+      //   child: Icon(Icons.toggle_on),
+      // ),
     );
   }
 
@@ -87,24 +87,69 @@ class Home extends GetWidget<HomeController> {
         SizedBox(
           height: 20,
         ),
+        Spacer(),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            FlatButton(
-              child: Text('aaaa'),
-              onPressed: () {},
-            ),
-            RaisedButton(
+            ElevatedButton(
               child: Obx(() => Text(controller.cmndText())),
               onPressed: () => controller.handleCmndPressed(),
-              color: Colors.blueGrey[600],
-              elevation: 15.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-                side: BorderSide(color: Colors.grey[600]),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blueGrey[600],
+                elevation: 15.0,
+                shadowColor: Colors.grey[700],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  side: BorderSide(color: Colors.grey[600]),
+                ),
+              ),
+            ),
+            ElevatedButton.icon(
+              label: Obx(() => Text(controller.trigStartText())),
+              icon: Icon(Icons.play_arrow),
+              onPressed: () => controller.handleTrigStartPressed(),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blueGrey[600],
+                elevation: 15.0,
+                shadowColor: Colors.grey[700],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  side: BorderSide(color: Colors.grey[600]),
+                ),
+              ),
+            ),
+            ElevatedButton.icon(
+              label: Obx(() => Text(controller.trigStopText())),
+              icon: Icon(Icons.stop),
+              onPressed: () => controller.handleTrigStopPressed(),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blueGrey[600],
+                elevation: 15.0,
+                shadowColor: Colors.grey[700],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  side: BorderSide(color: Colors.grey[600]),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              child: Obx(() => Text(controller.modeText())),
+              onPressed: () => controller.handleModePressed(),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blueGrey[600],
+                elevation: 15.0,
+                shadowColor: Colors.grey[700],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  side: BorderSide(color: Colors.grey[600]),
+                ),
               ),
             ),
           ],
-        )
+        ),
+        SizedBox(
+          height: 12,
+        ),
       ],
     );
   }
@@ -156,6 +201,15 @@ class Home extends GetWidget<HomeController> {
               thickness: 1,
             )),
         //viewport: NumericExtents(1, 30),
+        tickProviderSpec: StaticNumericTickProviderSpec(
+          [
+            TickSpec(-10),
+            TickSpec(-5),
+            TickSpec(0),
+            TickSpec(5),
+            TickSpec(10),
+          ],
+        ),
       ),
     );
     return aTSC;
