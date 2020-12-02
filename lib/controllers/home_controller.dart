@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:accelerometer/models/sensor_model.dart';
 import 'package:accelerometer/services/sensor.dart';
 import 'package:get/get.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:get/get_connect/http/src/utils/utils.dart';
 
 //state machine states enums
 enum commands {
@@ -24,6 +26,7 @@ enum states {
   waiting,
   capturing,
   persisting,
+  viewing,
 }
 
 final triggerType = ['Level', 'Timer', 'Auto'];
@@ -38,9 +41,9 @@ class HomeController extends GetxController {
   var sensor = Sensor();
   StreamSubscription subscription;
   var aList = List<SensorModel>();
-  var startLevel = 7.0;
+  var startLevel = 8.0;
   var startPosEdge = true;
-  var stopLevel = -7.5;
+  var stopLevel = -8.0;
   var stopPosEdge = false;
   var updateData = false;
 
@@ -72,31 +75,106 @@ class HomeController extends GetxController {
         channel: 0,
         timeStamp: DateTime.now(),
         value: x,
+        index: aList.length,
       );
-      aList.add(record);
+
       if (updateData) {
+        aList.add(record);
         update();
+        //stdout.write(".");
       }
+
       handleLevelTrig(record.value);
     });
   }
 
+  //List<charts.Series<SensorModel, DateTime>> getSeriesList() {
+  List<charts.Series<SensorModel, int>> getSeriesList() {
+    return [
+      //charts.Series<SensorModel, DateTime>(
+      charts.Series<SensorModel, int>(
+        id: 'dummy',
+        //domainFn: (SensorModel dataPoint, _) => dataPoint.timeStamp,
+        domainFn: (SensorModel dataPoint, _) => dataPoint.index,
+        measureFn: (SensorModel dataPoint, _) => dataPoint.value,
+        //return last x records from list
+        data: returnData(),
+      ),
+    ];
+  }
+
+  List<SensorModel> returnData() {
+    var len = aList.length;
+    var zoom = 40;
+    if (currentState == states.viewing ||
+        currentState == states.stopped ||
+        currentState == states.waiting) {
+      print('returnData - viewing or stopped or waiting');
+      print('data points ${aList.length}');
+      var x = 0;
+      aList.forEach((element) {
+        element.index = x;
+        x++;
+      });
+      return aList;
+    } else if (zoom <= len) {
+      var shortList = aList.sublist(len - zoom);
+      var x = 0;
+      shortList.forEach((element) {
+        element.index = x;
+        x++;
+      });
+      return shortList;
+    } else {
+      return aList;
+    }
+  }
+
+  // var dmnViewPortX1 = 0;
+  // var dmnViewPortX2 = 0;
+  // List<SensorModel> returnData() {
+  //   var len = aList.length;
+  //   var zoom = 40;
+  //   if (currentState == states.stopped) {
+  //     dmnViewPortX1 = 0;
+  //     dmnViewPortX2 = aList.length;
+  //     return aList;
+  //   } else if (zoom <= len) {
+  //     dmnViewPortX1 = len - zoom;
+  //     dmnViewPortX2 = len - 1;
+  //   } else if (len > 0) {
+  //     dmnViewPortX1 = 0;
+  //     dmnViewPortX2 = len - 1;
+  //   }
+
+  //   return aList;
+  // }
+
   void handleLevelTrig(double value) {
+    var levelTriggered = false;
     if (currentState == states.waiting) {
+      // level start
       if (trigStartText.value == triggerType[0]) {
         if (startPosEdge) {
           if (value > startLevel) {
             stateMan(command: commands.start, mode: currentMode);
             stateExecute(modeChanged: false, stateChanged: true);
+            levelTriggered = true;
           }
         } else {
           if (value < startLevel) {
             stateMan(command: commands.start, mode: currentMode);
             stateExecute(modeChanged: false, stateChanged: true);
+            levelTriggered = true;
           }
+        }
+        // check if timer stop trigger active
+        if (levelTriggered && trigStopText.value == triggerType[1]) {
+          enableStopTimeout();
         }
       }
     } else if (currentState == states.capturing) {
+      //level stop
       if (trigStopText.value == triggerType[0]) {
         if (stopPosEdge) {
           if (value > stopLevel) {
@@ -139,13 +217,18 @@ class HomeController extends GetxController {
       case states.capturing:
         currentMode = modes.capture;
         if (command == commands.stop) {
-          currentState = states.stopped;
+          currentState = states.viewing;
         }
         break;
       case states.persisting:
         currentMode = modes.persist;
         if (command == commands.stop) {
-          currentState = states.stopped;
+          currentState = states.viewing;
+        }
+        break;
+      case states.viewing:
+        if (command == commands.run) {
+          currentState = states.waiting;
         }
         break;
       default:
@@ -167,28 +250,34 @@ class HomeController extends GetxController {
         updateData = false;
         break;
       case states.waiting:
+        aList.clear();
+        //auto start - auto stop
         if (trigStartText.value == triggerType[2] &&
             trigStopText.value == triggerType[2]) {
           //subscription.resume();
           updateData = true;
           stateMan(command: commands.start, mode: currentMode);
           stateExecute(modeChanged: false, stateChanged: true);
+          //timer start - auto stop
         } else if (trigStartText.value == triggerType[1] &&
             trigStopText.value == triggerType[2]) {
           enableStartTimeout();
+          // timer start - timer stop
         } else if (trigStartText.value == triggerType[1] &&
             trigStopText.value == triggerType[1]) {
           enableStartStopTimeout();
+          // auto start - timerstop
         } else if (trigStartText.value == triggerType[2] &&
             trigStopText.value == triggerType[1]) {
           enableStopTimeout();
+          // not level start - level stop
         } else if (trigStartText.value != triggerType[0] &&
             trigStopText.value == triggerType[0]) {
           updateData = true;
           stateMan(command: commands.start, mode: currentMode);
           stateExecute(modeChanged: false, stateChanged: true);
+          // level start - timer stop
         }
-
         break;
       case states.capturing:
         //subscription.resume();
@@ -198,31 +287,15 @@ class HomeController extends GetxController {
         //subscription.resume();
         updateData = true;
         break;
+      case states.viewing:
+        print('states: viewing');
+        updateData = false;
+        update();
+        break;
       default:
         break;
     }
     stateChanged = false;
-  }
-
-  List<charts.Series<SensorModel, DateTime>> getSeriesList() {
-    return [
-      charts.Series<SensorModel, DateTime>(
-        id: 'dummy',
-        domainFn: (SensorModel dataPoint, _) => dataPoint.timeStamp,
-        measureFn: (SensorModel dataPoint, _) => dataPoint.value,
-        //return last x records from list
-        data: returnEnd(),
-      ),
-    ];
-  }
-
-  List<SensorModel> returnEnd() {
-    var len = aList.length;
-    var zoom = 40;
-    if (zoom <= len) {
-      return aList.sublist(len - zoom);
-    } else
-      return aList;
   }
 
   // void handleStopGo() {

@@ -154,8 +154,10 @@ class Home extends GetWidget<HomeController> {
     );
   }
 
-  TimeSeriesChart barChart(int index) {
-    TimeSeriesChart aTSC = TimeSeriesChart(
+  // TimeSeriesChart barChart(int index) {
+  //   TimeSeriesChart aTSC = TimeSeriesChart(
+  LineChart barChart(int index) {
+    LineChart aTSC = LineChart(
       controller.getSeriesList(),
       animate: false,
       behaviors: [
@@ -170,7 +172,7 @@ class Home extends GetWidget<HomeController> {
         ),
         //SelectNearest(),
         //DomainHighlighter(),
-        //PanAndZoomBehavior(), not working well, cannot zoom right
+        //PanAndZoomBehavior(), //not working well, cannot zoom right
       ],
       // Optionally pass in a [DateTimeFactory] used by the chart.
       // The factory should create the same type of [DateTime] as
@@ -189,24 +191,37 @@ class Home extends GetWidget<HomeController> {
       //     day: TimeFormatterSpec(format: 'd', transitionFormat: 'MM/dd/yyyy'),
       //   ),
       // ),
+      // domainAxis: NumericAxisSpec(
+      //   viewport: NumericExtents(
+      //     controller.dmnViewPortX1,
+      //     controller.dmnViewPortX2,
+      //   ),
+      // ),
       primaryMeasureAxis: NumericAxisSpec(
         renderSpec: GridlineRendererSpec(
-            // Tick and Label styling here.
-            labelStyle: TextStyleSpec(
-                fontSize: 12, // size in Pts.
-                color: MaterialPalette.white),
-            // Change the line colors to match text color.
-            lineStyle: LineStyleSpec(
-              color: MaterialPalette.black,
-              thickness: 1,
-            )),
-        //viewport: NumericExtents(1, 30),
+          // Tick and Label styling here.
+          labelStyle: TextStyleSpec(
+              fontSize: 12, // size in Pts.
+              color: MaterialPalette.white),
+          // Change the line colors to match text color.
+          lineStyle: LineStyleSpec(
+            color: MaterialPalette.black,
+            thickness: 1,
+          ),
+        ),
+        viewport: NumericExtents(-6, 6),
         tickProviderSpec: StaticNumericTickProviderSpec(
           [
             TickSpec(-10),
-            TickSpec(-5),
+            TickSpec(-8),
+            TickSpec(-6),
+            TickSpec(-4),
+            TickSpec(-2),
             TickSpec(0),
-            TickSpec(5),
+            TickSpec(2),
+            TickSpec(4),
+            TickSpec(6),
+            TickSpec(8),
             TickSpec(10),
           ],
         ),
