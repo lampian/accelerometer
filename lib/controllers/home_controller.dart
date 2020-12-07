@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:accelerometer/models/sensor_model.dart';
 import 'package:accelerometer/services/sensor.dart';
 import 'package:get/get.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:get/get_connect/http/src/utils/utils.dart';
 
 //state machine states enums
 enum commands {
@@ -46,6 +44,8 @@ class HomeController extends GetxController {
   var stopLevel = -8.0;
   var stopPosEdge = false;
   var updateData = false;
+  var zoomMin = 0.0;
+  var zoomMax = 100.0;
 
   @override
   void onInit() {
@@ -57,6 +57,12 @@ class HomeController extends GetxController {
       period: 8.0,
       samplePeriod: 50,
     );
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    subscription.cancel();
   }
 
   void initController() {
@@ -106,10 +112,21 @@ class HomeController extends GetxController {
   List<SensorModel> returnData() {
     var len = aList.length;
     var zoom = 40;
-    if (currentState == states.viewing ||
-        currentState == states.stopped ||
+    if (currentState == states.viewing) {
+      print('returnData - viewing');
+      print('data points ${aList.length}');
+      var start = zoomMin * aList.length / 100.0;
+      var stop = zoomMax * aList.length / 100.0;
+      var zoomList = aList.sublist(start.toInt(), stop.toInt());
+      var x = 0;
+      zoomList.forEach((element) {
+        element.index = x;
+        x++;
+      });
+      return zoomList;
+    } else if (currentState == states.stopped ||
         currentState == states.waiting) {
-      print('returnData - viewing or stopped or waiting');
+      print('returnData - stopped or waiting');
       print('data points ${aList.length}');
       var x = 0;
       aList.forEach((element) {
@@ -289,6 +306,8 @@ class HomeController extends GetxController {
         break;
       case states.viewing:
         print('states: viewing');
+        zoomMin = 0.0;
+        zoomMax = 100.0;
         updateData = false;
         update();
         break;
@@ -410,5 +429,16 @@ class HomeController extends GetxController {
     cmndText.value = cmndsText.first;
     stateMan(command: commands.stop, mode: currentMode);
     stateExecute(modeChanged: modeChanged, stateChanged: stateChanged);
+  }
+
+  void sliderCallBack(
+    int handlerIndex,
+    dynamic lowerValue,
+    dynamic upperValue,
+  ) {
+    print('slider- lower: $lowerValue upper: $upperValue');
+    zoomMin = lowerValue;
+    zoomMax = upperValue;
+    update();
   }
 }
