@@ -4,6 +4,7 @@ import 'package:accelerometer/models/sensor_model.dart';
 import 'package:accelerometer/services/sensor.dart';
 import 'package:get/get.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:sensors/sensors.dart';
 
 //state machine states enums
 enum commands {
@@ -75,12 +76,14 @@ class HomeController extends GetxController {
     cmndText.value = cmndsText.first;
   }
 
-  StreamSubscription<double> listenToStream() {
-    return sensor.sensorStream.listen((x) {
+  StreamSubscription<AccelerometerEvent> listenToStream() {
+    return sensor.sensorStream.listen((eventData) {
       var record = SensorModel(
         channel: 0,
         timeStamp: DateTime.now(),
-        value: x,
+        valueX: eventData.x,
+        valueY: eventData.y,
+        valueZ: eventData.z,
         index: aList.length,
       );
 
@@ -90,25 +93,53 @@ class HomeController extends GetxController {
         //stdout.write(".");
       }
 
-      handleLevelTrig(record.value);
+      handleLevelTrig(record);
     });
   }
 
   //List<charts.Series<SensorModel, DateTime>> getSeriesList() {
-  List<charts.Series<SensorModel, int>> getSeriesList() {
-    return [
-      //charts.Series<SensorModel, DateTime>(
-      charts.Series<SensorModel, int>(
-        id: 'dummy',
-        //domainFn: (SensorModel dataPoint, _) => dataPoint.timeStamp,
-        domainFn: (SensorModel dataPoint, _) => dataPoint.index,
-        measureFn: (SensorModel dataPoint, _) => dataPoint.value,
-        //return last x records from list
-        data: returnData(),
-      ),
-    ];
+  List<charts.Series<SensorModel, int>> getSeriesList(String chan) {
+    if (chan == 'x') {
+      return [
+        //charts.Series<SensorModel, DateTime>(
+        charts.Series<SensorModel, int>(
+          id: 'dummy',
+          //domainFn: (SensorModel dataPoint, _) => dataPoint.timeStamp,
+          domainFn: (SensorModel dataPoint, _) => dataPoint.index,
+          measureFn: (SensorModel dataPoint, _) => dataPoint.valueX,
+          //return last x records from list
+          data: returnData(),
+        ),
+      ];
+    } else if (chan == 'y') {
+      return [
+        //charts.Series<SensorModel, DateTime>(
+        charts.Series<SensorModel, int>(
+          id: 'dummy',
+          //domainFn: (SensorModel dataPoint, _) => dataPoint.timeStamp,
+          domainFn: (SensorModel dataPoint, _) => dataPoint.index,
+          measureFn: (SensorModel dataPoint, _) => dataPoint.valueY,
+          //return last x records from list
+          data: returnData(),
+        ),
+      ];
+    } else {
+      return [
+        //charts.Series<SensorModel, DateTime>(
+        charts.Series<SensorModel, int>(
+          id: 'dummy',
+          //domainFn: (SensorModel dataPoint, _) => dataPoint.timeStamp,
+          domainFn: (SensorModel dataPoint, _) => dataPoint.index,
+          measureFn: (SensorModel dataPoint, _) => dataPoint.valueZ,
+          //return last x records from list
+          data: returnData(),
+        ),
+      ];
+    }
   }
 
+  var dmnViewPortX1 = 0;
+  var dmnViewPortX2 = 1;
   List<SensorModel> returnData() {
     var len = aList.length;
     var zoom = 40;
@@ -118,7 +149,9 @@ class HomeController extends GetxController {
       var start = zoomMin * aList.length / 100.0;
       var stop = zoomMax * aList.length / 100.0;
       var zoomList = aList.sublist(start.toInt(), stop.toInt());
-      var x = 0;
+      dmnViewPortX1 = start.toInt();
+      dmnViewPortX2 = stop.toInt() - 1;
+      var x = dmnViewPortX1;
       zoomList.forEach((element) {
         element.index = x;
         x++;
@@ -128,14 +161,18 @@ class HomeController extends GetxController {
         currentState == states.waiting) {
       print('returnData - stopped or waiting');
       print('data points ${aList.length}');
-      var x = 0;
-      aList.forEach((element) {
-        element.index = x;
-        x++;
-      });
+      dmnViewPortX1 = 0;
+      dmnViewPortX2 = zoom - 1; //len > 1 ? len - 1 : 1;
+      // var x = 0;
+      // aList.forEach((element) {
+      //   element.index = x;
+      //   x++;
+      // });
       return aList;
-    } else if (zoom <= len) {
+    } else if (zoom < len) {
       var shortList = aList.sublist(len - zoom);
+      dmnViewPortX1 = 0;
+      dmnViewPortX2 = zoom - 1;
       var x = 0;
       shortList.forEach((element) {
         element.index = x;
@@ -143,32 +180,15 @@ class HomeController extends GetxController {
       });
       return shortList;
     } else {
+      dmnViewPortX1 = 0;
+      dmnViewPortX2 = zoom - 1; //len - 1;
       return aList;
     }
   }
 
-  // var dmnViewPortX1 = 0;
-  // var dmnViewPortX2 = 0;
-  // List<SensorModel> returnData() {
-  //   var len = aList.length;
-  //   var zoom = 40;
-  //   if (currentState == states.stopped) {
-  //     dmnViewPortX1 = 0;
-  //     dmnViewPortX2 = aList.length;
-  //     return aList;
-  //   } else if (zoom <= len) {
-  //     dmnViewPortX1 = len - zoom;
-  //     dmnViewPortX2 = len - 1;
-  //   } else if (len > 0) {
-  //     dmnViewPortX1 = 0;
-  //     dmnViewPortX2 = len - 1;
-  //   }
-
-  //   return aList;
-  // }
-
-  void handleLevelTrig(double value) {
+  void handleLevelTrig(SensorModel values) {
     var levelTriggered = false;
+    var value = values.rms();
     if (currentState == states.waiting) {
       // level start
       if (trigStartText.value == triggerType[0]) {

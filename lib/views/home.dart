@@ -1,7 +1,8 @@
 import 'package:accelerometer/controllers/home_controller.dart';
+import 'package:accelerometer/utils/sensor_chart.dart';
 import 'package:accelerometer/views/app_slider.dart';
 import 'package:accelerometer/views/home_drawer.dart';
-import 'package:charts_flutter/flutter.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
@@ -57,12 +58,14 @@ class Home extends GetWidget<HomeController> {
                   flex: 3,
                   child: Container(
                     color: Colors.green[200],
+                    child: yGroup(),
                   ),
                 ),
                 Expanded(
                   flex: 3,
                   child: Container(
                     color: Colors.amber[200],
+                    child: zGroup(),
                   ),
                 ),
               ],
@@ -109,12 +112,14 @@ class Home extends GetWidget<HomeController> {
           flex: 3,
           child: Container(
             color: Colors.green[200],
+            child: yGroup(),
           ),
         ),
         Expanded(
           flex: 3,
           child: Container(
             color: Colors.amber[200],
+            child: zGroup(),
           ),
         ),
         Expanded(
@@ -141,7 +146,35 @@ class Home extends GetWidget<HomeController> {
 
   Widget xGroup() {
     return GetBuilder<HomeController>(builder: (value) {
-      return appChart(0);
+      print('appChart(0) returned');
+      return SensorChart(
+        data: controller.getSeriesList('x'),
+        x1: controller.dmnViewPortX1,
+        x2: controller.dmnViewPortX2,
+        title: 'X',
+      );
+    });
+  }
+
+  Widget yGroup() {
+    return GetBuilder<HomeController>(builder: (value) {
+      print('appChart(0) returned');
+      return SensorChart(
+          data: controller.getSeriesList('y'),
+          x1: controller.dmnViewPortX1,
+          x2: controller.dmnViewPortX2,
+          title: 'Y');
+    });
+  }
+
+  Widget zGroup() {
+    return GetBuilder<HomeController>(builder: (value) {
+      print('appChart(0) returned');
+      return SensorChart(
+          data: controller.getSeriesList('z'),
+          x1: controller.dmnViewPortX1,
+          x2: controller.dmnViewPortX2,
+          title: 'Z');
     });
   }
 
@@ -171,79 +204,6 @@ class Home extends GetWidget<HomeController> {
 
   // TimeSeriesChart barChart(int index) {
   //   TimeSeriesChart aTSC = TimeSeriesChart(
-  LineChart appChart(int index) {
-    LineChart aTSC = LineChart(
-      controller.getSeriesList(),
-      animate: false,
-      behaviors: [
-        // ChartTitle(
-        //   'r1000',
-        //   titleStyleSpec: TextStyleSpec(color: Color.white),
-        // ),
-        ChartTitle(
-          'test', //controller.chs[index].toString(),
-          behaviorPosition: BehaviorPosition.start,
-          titleStyleSpec: TextStyleSpec(color: Color.white),
-        ),
-        //SelectNearest(),
-        //DomainHighlighter(),
-        //PanAndZoomBehavior(), //not working well, cannot zoom right
-      ],
-      // Optionally pass in a [DateTimeFactory] used by the chart.
-      // The factory should create the same type of [DateTime] as
-      // the data provided. If none specified, the default creates
-      // local date time.
-      //dateTimeFactory: LocalDateTimeFactory(),
-
-      // Customizes the date tick formatter. It will print the
-      // day of month as the default format, but include the
-      // month and year if it transitions to a new month.
-      // minute, hour, day, month, and year are all provided
-      // by default and you can override them following this
-      // pattern.
-      // domainAxis: DateTimeAxisSpec(
-      //   tickFormatterSpec: AutoDateTimeTickFormatterSpec(
-      //     day: TimeFormatterSpec(format: 'd', transitionFormat: 'MM/dd/yyyy'),
-      //   ),
-      // ),
-      // domainAxis: NumericAxisSpec(
-      //   viewport: NumericExtents(
-      //     controller.dmnViewPortX1,
-      //     controller.dmnViewPortX2,
-      //   ),
-      // ),
-      primaryMeasureAxis: NumericAxisSpec(
-        renderSpec: GridlineRendererSpec(
-          // Tick and Label styling here.
-          labelStyle: TextStyleSpec(
-              fontSize: 12, // size in Pts.
-              color: MaterialPalette.white),
-          // Change the line colors to match text color.
-          lineStyle: LineStyleSpec(
-            color: MaterialPalette.black,
-            thickness: 1,
-          ),
-        ),
-        viewport: NumericExtents(-6, 6),
-        tickProviderSpec: StaticNumericTickProviderSpec(
-          [
-            TickSpec(-10),
-            TickSpec(-8),
-            TickSpec(-6),
-            TickSpec(-4),
-            TickSpec(-2),
-            TickSpec(0),
-            TickSpec(2),
-            TickSpec(4),
-            TickSpec(6),
-            TickSpec(8),
-            TickSpec(10),
-          ],
-        ),
-      ),
-    );
-    return aTSC;
-  }
 
   Widget cmndButton() {
     return ElevatedButton(

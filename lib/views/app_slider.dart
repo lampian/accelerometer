@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 
 class AppSlider extends StatelessWidget {
-  bool vertical;
-  Function callBack;
+  final bool vertical;
+  final Function callBack;
 
   AppSlider({
     @required this.vertical,
