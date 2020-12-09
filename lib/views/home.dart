@@ -1,7 +1,8 @@
 import 'package:accelerometer/controllers/home_controller.dart';
 import 'package:accelerometer/utils/sensor_chart.dart';
-import 'package:accelerometer/views/app_slider.dart';
+import 'package:accelerometer/widgets/app_slider.dart';
 import 'package:accelerometer/views/home_drawer.dart';
+import 'package:accelerometer/views/level_trig_setup.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -123,10 +124,11 @@ class Home extends GetWidget<HomeController> {
           ),
         ),
         Expanded(
+          flex: 2,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(25, 0, 25, 0),
             child: Container(
-              color: Colors.indigo[200],
+              color: Colors.transparent,
               child: AppSlider(
                 vertical: false,
                 callBack: controller.sliderCallBack,
@@ -136,7 +138,7 @@ class Home extends GetWidget<HomeController> {
         ),
         Expanded(
           child: Container(
-            color: Colors.lime,
+            color: Colors.transparent,
             child: portraitControlGroup(),
           ),
         ), //,
@@ -226,6 +228,10 @@ class Home extends GetWidget<HomeController> {
       label: Obx(() => Text(controller.trigStartText())),
       icon: Icon(Icons.play_arrow),
       onPressed: () => controller.handleTrigStartPressed(),
+      onLongPress: () async {
+        var result = await Get.to(LevelTrigSetup(controller.levelTrigData()));
+        print(result);
+      },
       style: ElevatedButton.styleFrom(
         primary: Colors.blueGrey[600],
         elevation: 15.0,

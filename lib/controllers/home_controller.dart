@@ -42,11 +42,20 @@ class HomeController extends GetxController {
   var aList = List<SensorModel>();
   var startLevel = 8.0;
   var startPosEdge = true;
-  var stopLevel = -8.0;
+  var stopLevel = -4.0;
   var stopPosEdge = false;
   var updateData = false;
   var zoomMin = 0.0;
   var zoomMax = 100.0;
+
+  Map<dynamic, dynamic> levelTrigData() {
+    return {
+      'startLevel': startLevel,
+      'startPosEdge': startPosEdge,
+      'stopLevel': stopLevel,
+      'stopPosEdge': stopPosEdge,
+    };
+  }
 
   @override
   void onInit() {
@@ -365,15 +374,24 @@ class HomeController extends GetxController {
   var trigStartText = 'Auto'.obs;
   var trigStopText = 'Auto'.obs;
 
+  bool doNotDisturb() {
+    if (currentState == states.capturing ||
+        currentState == states.persisting ||
+        currentState == states.waiting)
+      return true;
+    else
+      return false;
+  }
+
   void handleTrigStartPressed() {
     //dont modify trigger when running
-    if (currentState != states.stopped) return;
+    if (doNotDisturb()) return;
     trigStartText.value = getNextTrigLabel(trigStartText.value);
   }
 
   void handleTrigStopPressed() {
     //dont modify trigger when running
-    if (currentState != states.stopped) return;
+    if (doNotDisturb()) return;
     trigStopText.value = getNextTrigLabel(trigStopText.value);
   }
 
@@ -403,7 +421,7 @@ class HomeController extends GetxController {
   var modeText = 'Capture'.obs;
 
   void handleModePressed() {
-    if (currentState != states.stopped) return;
+    if (doNotDisturb()) return;
     var idx = modesText.indexOf(modeText.value);
     if (idx < modesText.length - 1) {
       modeText.value = modesText[idx + 1];
