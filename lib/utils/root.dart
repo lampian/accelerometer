@@ -3,6 +3,7 @@ import 'package:accelerometer/controllers/home_controller.dart';
 import 'package:accelerometer/views/home.dart';
 import 'package:accelerometer/views/level_trig_setup.dart';
 import 'package:accelerometer/views/login.dart';
+import 'package:accelerometer/views/timing_setup.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,6 +20,7 @@ class Root extends GetWidget<AuthController> {
         if (controller.user?.uid != null) {
           Get.put<HomeController>(HomeController());
           Get.put<LevelTrigController>(LevelTrigController());
+          Get.put<TimingSetupController>(TimingSetupController());
           return Home();
         } else {
           return Login();

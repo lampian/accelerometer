@@ -211,6 +211,12 @@ class Home extends GetWidget<HomeController> {
     return ElevatedButton(
       child: Obx(() => Text(controller.cmndText())),
       onPressed: () => controller.handleCmndPressed(),
+      onLongPress: () async {
+        await controller.handleLongPress(
+          controller.cmndText.value,
+          startStopText: 'run',
+        );
+      },
       style: ElevatedButton.styleFrom(
         primary: Colors.blueGrey[600],
         elevation: 15.0,
@@ -229,7 +235,10 @@ class Home extends GetWidget<HomeController> {
       icon: Icon(Icons.play_arrow),
       onPressed: () => controller.handleTrigStartPressed(),
       onLongPress: () async {
-        await controller.handleLongPress(controller.trigStartText.value);
+        await controller.handleLongPress(
+          controller.trigStartText.value,
+          startStopText: 'start',
+        );
       },
       style: ElevatedButton.styleFrom(
         primary: Colors.blueGrey[600],
@@ -249,7 +258,10 @@ class Home extends GetWidget<HomeController> {
       icon: Icon(Icons.stop),
       onPressed: () => controller.handleTrigStopPressed(),
       onLongPress: () async {
-        await controller.handleLongPress(controller.trigStopText.value);
+        await controller.handleLongPress(
+          controller.trigStopText.value,
+          startStopText: 'stop',
+        );
       },
       style: ElevatedButton.styleFrom(
         primary: Colors.blueGrey[600],

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:accelerometer/models/sensor_model.dart';
 import 'package:accelerometer/services/sensor.dart';
 import 'package:accelerometer/views/level_trig_setup.dart';
+import 'package:accelerometer/views/timing_setup.dart';
 import 'package:get/get.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:sensors/sensors.dart';
@@ -48,6 +49,7 @@ class HomeController extends GetxController {
   var updateData = false;
   var zoomMin = 0.0;
   var zoomMax = 100.0;
+  var samplePeriod = 50;
 
   Map<dynamic, dynamic> levelTrigData() {
     return {
@@ -73,7 +75,7 @@ class HomeController extends GetxController {
       maxCount: -1,
       offset: 0.0,
       period: 8.0,
-      samplePeriod: 50,
+      samplePeriod: samplePeriod,
     );
   }
 
@@ -446,11 +448,12 @@ class HomeController extends GetxController {
     }
   }
 
-  var waitForDuration = Duration(seconds: 7);
+  var waitForDuration = Duration(seconds: 5);
+  var runUntilDuration = Duration(seconds: 10);
 
   enableStartTimeout() {
     print('start timer: ${DateTime.now()}');
-    return Timer(Duration(seconds: 7), startTimerCallback);
+    return Timer(waitForDuration, startTimerCallback);
   }
 
   void startTimerCallback() {
@@ -461,7 +464,7 @@ class HomeController extends GetxController {
 
   enableStartStopTimeout() {
     print('start timer: ${DateTime.now()}');
-    return Timer(Duration(seconds: 7), startStopTimerCallback);
+    return Timer(runUntilDuration, startStopTimerCallback);
   }
 
   void startStopTimerCallback() {
@@ -496,12 +499,36 @@ class HomeController extends GetxController {
     update();
   }
 
-  Future<void> handleLongPress(String trigText) async {
+  Future<void> handleLongPress(
+    String trigText, {
+    String startStopText = 'start',
+  }) async {
     if (trigText == triggerType[0]) {
       var result = await Get.to(LevelTrigSetup(levelTrigData()));
       print(result);
       setLevelTrigData(result);
     } else if (trigText == triggerType[1]) {
-    } else {}
+      if (startStopText == 'start') {
+        var result = await Get.to(TimingSetup(
+          duration: waitForDuration,
+        ));
+        print('result: $result');
+        waitForDuration = result;
+      } else {
+        var result = await Get.to(TimingSetup(
+          duration: runUntilDuration,
+        ));
+        print('result: $result');
+        runUntilDuration = result;
+      }
+    } else {
+      if (startStopText == 'run') {
+        Duration result = await Get.to(TimingSetup(
+          duration: Duration(milliseconds: samplePeriod),
+        ));
+        print('result: $result');
+        samplePeriod = result.inMilliseconds;
+      }
+    }
   }
 }
