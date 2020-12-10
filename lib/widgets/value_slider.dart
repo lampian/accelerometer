@@ -40,7 +40,7 @@ class ValueSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     return FlutterSlider(
       rtl: true,
-      centeredOrigin: true,
+      centeredOrigin: false,
       rangeSlider: false,
       values: [controller.value],
       max: controller.max,
@@ -49,13 +49,13 @@ class ValueSlider extends StatelessWidget {
       onDragCompleted: callBack,
       trackBar: FlutterSliderTrackBar(
         activeTrackBarHeight: 6,
-        centralWidget: Container(
-          decoration: BoxDecoration(
-              color: Colors.blueAccent,
-              borderRadius: BorderRadius.circular(50)),
-          width: 9,
-          height: 9,
-        ),
+        // centralWidget: Container(
+        //   decoration: BoxDecoration(
+        //       color: Colors.blueAccent,
+        //       borderRadius: BorderRadius.circular(50)),
+        //   width: 9,
+        //   height: 9,
+        // ),
       ),
       tooltip: FlutterSliderTooltip(
         textStyle: TextStyle(

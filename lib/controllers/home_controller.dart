@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:accelerometer/models/sensor_model.dart';
 import 'package:accelerometer/services/sensor.dart';
+import 'package:accelerometer/views/level_trig_setup.dart';
 import 'package:get/get.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:sensors/sensors.dart';
@@ -40,9 +41,9 @@ class HomeController extends GetxController {
   var sensor = Sensor();
   StreamSubscription subscription;
   var aList = List<SensorModel>();
-  var startLevel = 8.0;
+  var startLevel = 8.0; //must be >= 0
   var startPosEdge = true;
-  var stopLevel = -4.0;
+  var stopLevel = 4.0; //must be >= 0
   var stopPosEdge = false;
   var updateData = false;
   var zoomMin = 0.0;
@@ -55,6 +56,13 @@ class HomeController extends GetxController {
       'stopLevel': stopLevel,
       'stopPosEdge': stopPosEdge,
     };
+  }
+
+  setLevelTrigData(Map<dynamic, dynamic> map) {
+    startLevel = map['startLevel'];
+    startPosEdge = map['startPosEdge'];
+    stopLevel = map['stopLevel'];
+    stopPosEdge = map['stopPosEdge'];
   }
 
   @override
@@ -206,12 +214,16 @@ class HomeController extends GetxController {
             stateMan(command: commands.start, mode: currentMode);
             stateExecute(modeChanged: false, stateChanged: true);
             levelTriggered = true;
+            print('Start level triggered on positive edge with value '
+                '$value and trigger level $startLevel');
           }
         } else {
           if (value < startLevel) {
             stateMan(command: commands.start, mode: currentMode);
             stateExecute(modeChanged: false, stateChanged: true);
             levelTriggered = true;
+            print('Start level triggered on negative edge with value '
+                '$value and trigger level $startLevel');
           }
         }
         // check if timer stop trigger active
@@ -227,12 +239,16 @@ class HomeController extends GetxController {
             stateMan(command: commands.stop, mode: currentMode);
             stateExecute(modeChanged: false, stateChanged: true);
             cmndText.value = cmndsText.first;
+            print('Stop level triggered on positive edge with value '
+                '$value and trigger level $stopLevel');
           }
         } else {
           if (value < stopLevel) {
             stateMan(command: commands.stop, mode: currentMode);
             stateExecute(modeChanged: false, stateChanged: true);
             cmndText.value = cmndsText.first;
+            print('Stop level triggered on negative edge with value '
+                '$value and trigger level $stopLevel');
           }
         }
       }
@@ -478,5 +494,14 @@ class HomeController extends GetxController {
     zoomMin = lowerValue;
     zoomMax = upperValue;
     update();
+  }
+
+  Future<void> handleLongPress(String trigText) async {
+    if (trigText == triggerType[0]) {
+      var result = await Get.to(LevelTrigSetup(levelTrigData()));
+      print(result);
+      setLevelTrigData(result);
+    } else if (trigText == triggerType[1]) {
+    } else {}
   }
 }

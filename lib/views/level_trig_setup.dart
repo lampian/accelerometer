@@ -145,10 +145,10 @@ class LevelTrigSetup extends GetWidget<LevelTrigController> {
 
   Map<dynamic, dynamic> levelTrigData() {
     return {
-      'startLevel': controller.startTrigLevel,
-      'startPosEdge': controller.startTrigIsPosEdge,
-      'stopLevel': controller.endTrigLevel,
-      'stopPosEdge': controller.endTrigIsPosEdge,
+      'startLevel': controller.startTrigLevel.value,
+      'startPosEdge': controller.startTrigIsPosEdge.value,
+      'stopLevel': controller.endTrigLevel.value,
+      'stopPosEdge': controller.endTrigIsPosEdge.value,
     };
   }
 
@@ -232,8 +232,8 @@ class LevelTrigSetup extends GetWidget<LevelTrigController> {
       child: ValueSlider(
         cntlTag: 'start',
         vertical: true,
-        min: -10.0,
-        max: 10.0,
+        min: 0.0, //this cant be neagtive since rms values are used in check
+        max: 20.0,
         value: controller.startTrigLevel.value,
         callBack: controller.startValueSliderCallBack,
       ),
@@ -298,8 +298,8 @@ class LevelTrigSetup extends GetWidget<LevelTrigController> {
       child: ValueSlider(
         cntlTag: 'end',
         vertical: true,
-        min: -10.0,
-        max: 10.0,
+        min: 0.0, //cant be negative since rms values are used in check
+        max: 20.0,
         value: controller.endTrigLevel.value,
         callBack: controller.endValueSliderCallBack,
       ),

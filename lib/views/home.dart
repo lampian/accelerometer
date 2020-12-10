@@ -229,8 +229,7 @@ class Home extends GetWidget<HomeController> {
       icon: Icon(Icons.play_arrow),
       onPressed: () => controller.handleTrigStartPressed(),
       onLongPress: () async {
-        var result = await Get.to(LevelTrigSetup(controller.levelTrigData()));
-        print(result);
+        await controller.handleLongPress(controller.trigStartText.value);
       },
       style: ElevatedButton.styleFrom(
         primary: Colors.blueGrey[600],
@@ -249,6 +248,9 @@ class Home extends GetWidget<HomeController> {
       label: Obx(() => Text(controller.trigStopText())),
       icon: Icon(Icons.stop),
       onPressed: () => controller.handleTrigStopPressed(),
+      onLongPress: () async {
+        await controller.handleLongPress(controller.trigStopText.value);
+      },
       style: ElevatedButton.styleFrom(
         primary: Colors.blueGrey[600],
         elevation: 15.0,
