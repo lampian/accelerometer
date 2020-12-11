@@ -190,12 +190,13 @@ class TimingSetup extends GetWidget<TimingSetupController> {
   }
 
   Duration getDuration() {
-    return Duration(
-      days: controller.days.value,
-      hours: controller.hrs.value,
-      minutes: controller.min.value,
-      seconds: controller.sec.value,
-      milliseconds: controller.msec.value,
-    );
+    var duration = Duration(
+        milliseconds: controller.msec.value +
+            (controller.sec.value * 1000) +
+            (controller.min.value * 60 * 1000) +
+            (controller.hrs.value * 60 * 60 * 1000) +
+            (controller.days.value * 24 * 60 * 60 * 1000));
+    print('timing seup getDuration duration: $duration');
+    return duration;
   }
 }

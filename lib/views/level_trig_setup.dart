@@ -65,8 +65,6 @@ class LevelTrigSetup extends GetWidget<LevelTrigController> {
     controller.endTrigLevel.value = map['stopLevel'];
     controller.endTrigIsPosEdge.value = !map['stopPosEdge'];
     controller.endEdgeTextCallback();
-    var dep = VSControllerBindings();
-    dep.dependencies();
   }
 
   Widget build(BuildContext context) {

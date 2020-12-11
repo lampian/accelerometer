@@ -31,7 +31,11 @@ dependencies:
   firebase_core: ^0.5.2+1
   flutter_xlider: ^3.4.0
   get: ^3.21.2
+  jose: ^0.2.1+1
+  mqtt_client: ^8.1.0
+  path_provider: ^1.6.24
   sensors: ^0.4.2+6
+  shimmer: ^1.1.2
 
 dev_dependencies:
   flutter_test:

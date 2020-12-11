@@ -11,16 +11,13 @@ class Sensor {
   Stream<AccelerometerEvent> sensorStream;
   var rng = Random();
 
-  Stream<AccelerometerEvent> timedCounter({
-    Duration samplePeriod,
-    int maxCount,
-    double amplitude,
-    double offset,
-    double period,
-  }) {
+  Stream<AccelerometerEvent> timedCounter({Duration samplePeriod}) {
     var streamController = StreamController<AccelerometerEvent>();
     Timer timer;
-    var domainVal = 0.0;
+
+    // timer fires at period samplePeriod which should be longer
+    // than sample rate of accelerometer, leaving samples in cash
+    // cashed data is averaged over period and put into stream
     void tick(Timer timer) {
       var xVal = 0.0;
       var yVal = 0.0;
@@ -43,13 +40,6 @@ class Sensor {
       }
 
       eventList.clear();
-      domainVal++;
-      //maxCount > 0 is th e number of sampples to take
-      //neg values indicates neverending stream
-      if (maxCount >= 0 && domainVal >= maxCount) {
-        timer.cancel();
-        streamController.close();
-      }
     }
 
     void startTimer() {
@@ -65,6 +55,7 @@ class Sensor {
         timer.cancel();
         timer = null;
       }
+      streamController.close();
     }
 
     streamController = StreamController<AccelerometerEvent>(
@@ -76,28 +67,20 @@ class Sensor {
     return streamController.stream;
   }
 
-  //TODO dual buffer
-  //implement 2 buffers alternating to avoid glitches?
+  // sample rate of accelerometer around 20ms ie 50samples/sec
+  // 1000 samples at around 20 sec smple rate
+  // swap over buffer most propably a overkill
   var eventList = <AccelerometerEvent>[];
   void listenToEvents() {
     accelerometerEvents.listen((event) {
       eventList.add(event);
+      //print('accel event ${DateTime.now()}');
     });
   }
 
-  void startStream({
-    int samplePeriod,
-    int maxCount,
-    double amplitude,
-    double offset,
-    double period,
-  }) {
+  void startStream({int samplePeriod}) {
     sensorStream = timedCounter(
       samplePeriod: Duration(milliseconds: samplePeriod),
-      amplitude: amplitude,
-      offset: offset,
-      period: period,
-      maxCount: maxCount,
     );
     listenToEvents();
   }

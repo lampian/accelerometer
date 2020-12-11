@@ -2,7 +2,6 @@ import 'package:accelerometer/controllers/home_controller.dart';
 import 'package:accelerometer/utils/sensor_chart.dart';
 import 'package:accelerometer/widgets/app_slider.dart';
 import 'package:accelerometer/views/home_drawer.dart';
-import 'package:accelerometer/views/level_trig_setup.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -204,26 +203,28 @@ class Home extends GetWidget<HomeController> {
     );
   }
 
-  // TimeSeriesChart barChart(int index) {
-  //   TimeSeriesChart aTSC = TimeSeriesChart(
-
   Widget cmndButton() {
-    return ElevatedButton(
-      child: Obx(() => Text(controller.cmndText())),
-      onPressed: () => controller.handleCmndPressed(),
-      onLongPress: () async {
-        await controller.handleLongPress(
-          controller.cmndText.value,
-          startStopText: 'run',
-        );
-      },
-      style: ElevatedButton.styleFrom(
-        primary: Colors.blueGrey[600],
-        elevation: 15.0,
-        shadowColor: Colors.grey[700],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          side: BorderSide(color: Colors.grey[600]),
+    return GetBuilder<HomeController>(
+      id: 'cmndButton',
+      builder: (_) => ElevatedButton(
+        child: Text(controller.cmndText),
+        onPressed: () => controller.handleCmndPressed(),
+        onLongPress: () async {
+          await controller.handleLongPress(
+            controller.cmndText,
+            startStopText: 'run',
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          primary: controller.waiting
+              ? Colors.yellow[800]
+              : Colors.blueGrey[600], //add waiting color
+          elevation: 15.0,
+          shadowColor: Colors.grey[700],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            side: BorderSide(color: Colors.grey[600]),
+          ),
         ),
       ),
     );

@@ -8,14 +8,6 @@ class VSController extends GetxController {
   double value;
 }
 
-class VSControllerBindings extends Bindings {
-  @override
-  void dependencies() {
-    Get.lazyPut(() => VSController(), tag: 'start');
-    Get.lazyPut(() => VSController(), tag: 'end');
-  }
-}
-
 class ValueSlider extends StatelessWidget {
   //GetView<VSController> {
   VSController get controller => Get.find<VSController>(tag: cntlTag);

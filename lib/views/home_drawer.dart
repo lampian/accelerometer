@@ -1,5 +1,6 @@
 import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/utils/root.dart';
+import 'package:accelerometer/views/mqtt_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -32,7 +33,13 @@ class HomeDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            title: Text('Toggle theme black'),
+            title: Text('Manage Mqtt configuration'),
+            onTap: () {
+              Get.to(MqttConfig());
+            },
+          ),
+          ListTile(
+            title: Text('Manage Mqtt Configuration'),
             onTap: () {
               if (Get.isDarkMode) {
                 Get.changeTheme(ThemeData.light());

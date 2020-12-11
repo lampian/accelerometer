@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:accelerometer/models/sensor_model.dart';
+import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/services/sensor.dart';
 import 'package:accelerometer/views/level_trig_setup.dart';
 import 'package:accelerometer/views/timing_setup.dart';
@@ -36,7 +38,6 @@ class HomeController extends GetxController {
   var lastCommand = commands.stop;
   var currentState = states.stopped;
   var currentMode = modes.capture;
-  //var triggerText = triggerType[0];
   var stateChanged = false;
   var modeChanged = false;
   var sensor = Sensor();
@@ -49,7 +50,14 @@ class HomeController extends GetxController {
   var updateData = false;
   var zoomMin = 0.0;
   var zoomMax = 100.0;
-  var samplePeriod = 50;
+  var samplePeriod = 250; //must be > 0
+
+  var _waiting = false.obs;
+  bool get waiting => _waiting.value;
+  set waiting(value) {
+    _waiting.value = value;
+    update(['cmndButton']);
+  }
 
   Map<dynamic, dynamic> levelTrigData() {
     return {
@@ -70,13 +78,7 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    sensor.startStream(
-      amplitude: 5.0,
-      maxCount: -1,
-      offset: 0.0,
-      period: 8.0,
-      samplePeriod: samplePeriod,
-    );
+    sensor.startStream(samplePeriod: samplePeriod);
   }
 
   @override
@@ -92,7 +94,7 @@ class HomeController extends GetxController {
     //subscription.pause();
     stateMan(command: lastCommand, mode: currentMode);
     stateExecute(stateChanged: stateChanged, modeChanged: modeChanged);
-    cmndText.value = cmndsText.first;
+    cmndText = cmndsText.first;
   }
 
   StreamSubscription<AccelerometerEvent> listenToStream() {
@@ -114,6 +116,15 @@ class HomeController extends GetxController {
 
       handleLevelTrig(record);
     });
+  }
+
+  void restartStream() {
+    if (subscription != null) {
+      subscription.cancel();
+      subscription = null;
+    }
+    sensor.startStream(samplePeriod: samplePeriod);
+    initController();
   }
 
   //List<charts.Series<SensorModel, DateTime>> getSeriesList() {
@@ -240,7 +251,7 @@ class HomeController extends GetxController {
           if (value > stopLevel) {
             stateMan(command: commands.stop, mode: currentMode);
             stateExecute(modeChanged: false, stateChanged: true);
-            cmndText.value = cmndsText.first;
+            cmndText = cmndsText.first;
             print('Stop level triggered on positive edge with value '
                 '$value and trigger level $stopLevel');
           }
@@ -248,7 +259,7 @@ class HomeController extends GetxController {
           if (value < stopLevel) {
             stateMan(command: commands.stop, mode: currentMode);
             stateExecute(modeChanged: false, stateChanged: true);
-            cmndText.value = cmndsText.first;
+            cmndText = cmndsText.first;
             print('Stop level triggered on negative edge with value '
                 '$value and trigger level $stopLevel');
           }
@@ -315,6 +326,7 @@ class HomeController extends GetxController {
         break;
       case states.waiting:
         aList.clear();
+        waiting = true;
         //auto start - auto stop
         if (trigStartText.value == triggerType[2] &&
             trigStopText.value == triggerType[2]) {
@@ -330,21 +342,34 @@ class HomeController extends GetxController {
         } else if (trigStartText.value == triggerType[1] &&
             trigStopText.value == triggerType[1]) {
           enableStartStopTimeout();
+          // timer start - level stop
+        } else if (trigStartText.value == triggerType[1] &&
+            trigStopText.value == triggerType[0]) {
+          enableStartTimeout();
           // auto start - timerstop
         } else if (trigStartText.value == triggerType[2] &&
             trigStopText.value == triggerType[1]) {
           enableStopTimeout();
-          // not level start - level stop
-        } else if (trigStartText.value != triggerType[0] &&
+          // auto start - level stop
+        } else if (trigStartText.value == triggerType[2] &&
             trigStopText.value == triggerType[0]) {
           updateData = true;
           stateMan(command: commands.start, mode: currentMode);
           stateExecute(modeChanged: false, stateChanged: true);
-          // level start - timer stop
+          // level start => level handler will take care of stop
+        } else if (trigStartText.value == triggerType[0]) {
+          // updateData = true;
+          // stateMan(command: commands.start, mode: currentMode);
+          // stateExecute(modeChanged: false, stateChanged: true);
+          print(' level trigger');
+        } else {
+          print('home controller - condition not detected');
+          throw ProcessException;
         }
         break;
       case states.capturing:
         //subscription.resume();
+        waiting = false;
         updateData = true;
         break;
       case states.persisting:
@@ -373,16 +398,21 @@ class HomeController extends GetxController {
   // }
 
   final cmndsText = ['Run', 'Stop'];
-  var cmndText = 'Stop'.obs;
+  var _cmndText = 'Stop'.obs;
+  String get cmndText => _cmndText.value;
+  set cmndText(val) {
+    _cmndText.value = val;
+    update(['cmndButton']);
+  }
 
   void handleCmndPressed() {
-    var idx = cmndsText.indexOf(cmndText.value);
+    var idx = cmndsText.indexOf(_cmndText.value);
     if (idx < cmndsText.length - 1) {
-      cmndText.value = cmndsText[idx + 1];
+      cmndText = cmndsText[idx + 1];
       stateMan(command: commands.run, mode: currentMode);
       stateExecute(modeChanged: modeChanged, stateChanged: stateChanged);
     } else {
-      cmndText.value = cmndsText.first;
+      cmndText = cmndsText.first;
       stateMan(command: commands.stop, mode: currentMode);
       stateExecute(modeChanged: modeChanged, stateChanged: stateChanged);
     }
@@ -483,7 +513,7 @@ class HomeController extends GetxController {
 
   void stopTimerCallback() {
     print('stop timer: ${DateTime.now()}');
-    cmndText.value = cmndsText.first;
+    cmndText = cmndsText.first;
     stateMan(command: commands.stop, mode: currentMode);
     stateExecute(modeChanged: modeChanged, stateChanged: stateChanged);
   }
@@ -528,7 +558,17 @@ class HomeController extends GetxController {
         ));
         print('result: $result');
         samplePeriod = result.inMilliseconds;
+        //updating sample period does not change stream content
+        //the stream needs to be restarted with the new period.
+        restartStream();
       }
     }
+  }
+
+  MQTTManager mqttManager;
+  void mqttConfigureAndConnect() {
+    mqttManager = MQTTManager();
+    mqttManager.initializeMQTTClient();
+    mqttManager.connect();
   }
 }

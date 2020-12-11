@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:accelerometer/models/mqtt_model.dart';
 import 'package:accelerometer/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -55,20 +56,20 @@ class Database {
       return retVal;
     });
   }
-/*
-  Stream<List<MqttModel>> mqttStream() {
-    return _firestore
-        .collection("mqtts")
-        //.orderBy("name", descending: false)
-        .snapshots()
-        .map((QuerySnapshot query) {
-      List<MqttModel> retVal = List();
-      query.docs.forEach((element) {
-        retVal.add(MqttModel.fromDocumentSnapshot(documentSnapshot: element));
-      });
-      return retVal;
-    });
-  }
+
+  // Stream<List<MqttModel>> mqttStream() {
+  //   return _firestore
+  //       .collection("mqtts")
+  //       //.orderBy("name", descending: false)
+  //       .snapshots()
+  //       .map((QuerySnapshot query) {
+  //     List<MqttModel> retVal = List();
+  //     query.docs.forEach((element) {
+  //       retVal.add(MqttModel.fromDocumentSnapshot(documentSnapshot: element));
+  //     });
+  //     return retVal;
+  //   });
+  // }
 
   Stream<List<MqttModel>> userMqttStream(String uid) {
     return _firestore
@@ -86,47 +87,47 @@ class Database {
     });
   }
 
-  Stream<List<Thing>> thingsStream() {
-    return _firestore
-        .collection("things")
-        //.orderBy("name", descending: false)
-        .snapshots()
-        .map((QuerySnapshot query) {
-      List<Thing> retVal = List();
-      query.docs.forEach((element) {
-        retVal.add(Thing.fromDocumentSnapshot(documentSnapshot: element));
-      });
-      return retVal;
-    });
-  }
+  // Stream<List<Thing>> thingsStream() {
+  //   return _firestore
+  //       .collection("things")
+  //       //.orderBy("name", descending: false)
+  //       .snapshots()
+  //       .map((QuerySnapshot query) {
+  //     List<Thing> retVal = List();
+  //     query.docs.forEach((element) {
+  //       retVal.add(Thing.fromDocumentSnapshot(documentSnapshot: element));
+  //     });
+  //     return retVal;
+  //   });
+  // }
 
-  Future<Thing> getThing(String thingID) async {
-    var document = _firestore.collection('things').doc(thingID);
-    var a = await document
-        .snapshots()
-        .first
-        .then((value) => Thing.fromDocumentSnapshot(documentSnapshot: value));
-    return a;
-  }
+  // Future<Thing> getThing(String thingID) async {
+  //   var document = _firestore.collection('things').doc(thingID);
+  //   var a = await document
+  //       .snapshots()
+  //       .first
+  //       .then((value) => Thing.fromDocumentSnapshot(documentSnapshot: value));
+  //   return a;
+  // }
 
-  Future<void> addThing(Thing thing) async {
-    try {
-      //if true, add room id to users rooms collection
-      _firestore.collection("things").doc(thing.id).set(thing.toJson());
-    } catch (e) {
-      print('ims: database $e');
-      rethrow;
-    }
-  }
+  // Future<void> addThing(Thing thing) async {
+  //   try {
+  //     //if true, add room id to users rooms collection
+  //     _firestore.collection("things").doc(thing.id).set(thing.toJson());
+  //   } catch (e) {
+  //     print('ims: database $e');
+  //     rethrow;
+  //   }
+  // }
 
-  Future<void> updateThing(Thing thing) async {
-    try {
-      await _firestore.collection("things").doc(thing.id).set(thing.toJson());
-    } catch (e) {
-      print('ims: database $e');
-      rethrow;
-    }
-  }
+  // Future<void> updateThing(Thing thing) async {
+  //   try {
+  //     await _firestore.collection("things").doc(thing.id).set(thing.toJson());
+  //   } catch (e) {
+  //     print('ims: database $e');
+  //     rethrow;
+  //   }
+  // }
 
   Future<void> updateDevice(String device, String payload) async {
     try {
@@ -138,101 +139,55 @@ class Database {
     }
   }
 
-  Future<void> deleteThing(Thing thing) async {
-    try {
-      await _firestore.collection("things").doc(thing.id).delete();
-    } catch (e) {
-      print('ims: database $e');
-      rethrow;
-    }
-  }
-
-  Stream<List<ChannelModel>> channelStream(String deviceID) {
-    return _firestore
-        .collection("things")
-        .doc(deviceID)
-        .collection("channels")
-        //.orderBy("name", descending: false)
-        .snapshots()
-        .map((QuerySnapshot query) {
-      List<ChannelModel> retVal = List();
-      query.docs.forEach((element) {
-        retVal
-            .add(ChannelModel.fromDocumentSnapshot(documentSnapshot: element));
-      });
-      return retVal;
-    });
-  }
-
-  Future<List<ChannelModel>> getChannels(String thingID) async {
-    List<ChannelModel> aList = List();
-    var a = await _firestore
-        .collection('things')
-        .doc(thingID)
-        .collection('channels')
-        .get();
-
-    a.docs.forEach((element) {
-      aList.add(ChannelModel.fromDocumentSnapshot(documentSnapshot: element));
-    });
-    return aList;
-  }
-
-  Future<void> addChannel(ChannelModel channel) async {
-    try {
-      //if true, add room id to users rooms collection
-      _firestore
-          .collection("things")
-          .doc(channel.deviceID)
-          .collection('channels')
-          .doc(channel.channelID)
-          .set(channel.toJson());
-    } catch (e) {
-      print('ims: database $e');
-      rethrow;
-    }
-  }
-
-  // Future<void> addRoom(RoomModel room) async {
+  // Future<void> deleteThing(Thing thing) async {
   //   try {
-  //     await _firestore.collection("rooms").doc(room.id).set(room.toJson());
+  //     await _firestore.collection("things").doc(thing.id).delete();
   //   } catch (e) {
   //     print('ims: database $e');
   //     rethrow;
   //   }
   // }
 
-  // Future<void> editRoom(RoomModel room) async {
-  //   try {
-  //     await _firestore.collection("rooms").doc(room.id).set(room.toJson());
-  //   } catch (e) {
-  //     print('ims: database $e');
-  //     rethrow;
-  //   }
+  // Stream<List<ChannelModel>> channelStream(String deviceID) {
+  //   return _firestore
+  //       .collection("things")
+  //       .doc(deviceID)
+  //       .collection("channels")
+  //       //.orderBy("name", descending: false)
+  //       .snapshots()
+  //       .map((QuerySnapshot query) {
+  //     List<ChannelModel> retVal = List();
+  //     query.docs.forEach((element) {
+  //       retVal
+  //           .add(ChannelModel.fromDocumentSnapshot(documentSnapshot: element));
+  //     });
+  //     return retVal;
+  //   });
   // }
 
-  // Future<void> editUserRoom(String uid, RoomModel room) async {
-  //   try {
-  //     await _firestore
-  //         .collection("users")
-  //         .doc(uid)
-  //         .collection("rooms")
-  //         .doc(room.id)
-  //         .set(room.toJson());
-  //   } catch (e) {
-  //     print('ims: database $e');
-  //     rethrow;
-  //   }
+  // Future<List<ChannelModel>> getChannels(String thingID) async {
+  //   List<ChannelModel> aList = List();
+  //   var a = await _firestore
+  //       .collection('things')
+  //       .doc(thingID)
+  //       .collection('channels')
+  //       .get();
+
+  //   a.docs.forEach((element) {
+  //     aList.add(ChannelModel.fromDocumentSnapshot(documentSnapshot: element));
+  //   });
+  //   return aList;
   // }
 
-  // Future<void> deleteUserRoom(String uid, RoomModel room) async {
+  // Future<void> addChannel(ChannelModel channel) async {
   //   try {
-  //     await _firestore
-  //         .collection("users")
-  //         .doc(uid)
-  //         .collection("rooms")
-  //         .doc(room.id)
-  //         .delete();
+  //     //if true, add room id to users rooms collection
+  //     _firestore
+  //         .collection("things")
+  //         .doc(channel.deviceID)
+  //         .collection('channels')
+  //         .doc(channel.channelID)
+  //         .set(channel.toJson());
   //   } catch (e) {
   //     print('ims: database $e');
   //     rethrow;
@@ -254,5 +209,4 @@ class Database {
       rethrow;
     }
   }
-  */
 }
