@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:accelerometer/certificate/keys.dart';
 import 'package:accelerometer/models/mqtt_model.dart';
-import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 

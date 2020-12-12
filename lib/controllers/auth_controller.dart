@@ -30,6 +30,11 @@ class AuthController extends GetxController {
   Rx<User> _firebaseUser = Rx<User>();
 
   User get user => _firebaseUser.value;
+  User get currentUser {
+    var x = auth.currentUser;
+    print('current user email: ${x.email}');
+    return x;
+  }
 
   var nameTextCntl = TextEditingController();
   get nameText => this.nameTextCntl.text;
@@ -45,8 +50,8 @@ class AuthController extends GetxController {
 
   @override
   onInit() {
-    _firebaseUser.bindStream(auth.authStateChanges());
     super.onInit();
+    _firebaseUser.bindStream(auth.authStateChanges());
   }
 
   Future<String> createUser() async {
