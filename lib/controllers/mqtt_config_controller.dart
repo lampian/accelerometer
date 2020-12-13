@@ -1,11 +1,12 @@
 import 'package:accelerometer/models/mqtt_model.dart';
 import 'package:accelerometer/services/database.dart';
+import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
 import 'auth_controller.dart';
 
-enum Mode { create, read, update, delete, copy }
+enum Mode { create, read, update, delete, copy, configure }
 
 class MqttConfigController extends GetxController {
   var _mqttList = Rx<List<MqttModel>>();
@@ -23,8 +24,10 @@ class MqttConfigController extends GetxController {
   User get user => _user;
   set user(value) => this._user;
 
+  MqttManager mqttManager;
+
   @override
-  void onInit() {
+  Future<void> onInit() async {
     super.onInit();
     _user = Get.find<AuthController>().currentUser;
     if (user == null) return;
@@ -46,8 +49,12 @@ class MqttConfigController extends GetxController {
         mode = Mode.copy;
         break;
       case Mode.copy:
+        mode = Mode.configure;
+        break;
+      case Mode.configure:
         mode = Mode.create;
         break;
+
       default:
         mode = Mode.read;
     }

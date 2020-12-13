@@ -1,30 +1,75 @@
 import 'dart:io';
 
-import 'package:accelerometer/controllers/mqtt_controller.dart';
-import 'package:get/get.dart';
+import 'package:accelerometer/certificate/keys.dart';
+import 'package:accelerometer/certificate/rsa_file_handler.dart';
+import 'package:accelerometer/models/mqtt_model.dart';
+import 'package:get/state_manager.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:jose/jose.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
-class MQTTManager {
-  MqttController controller;
+enum MqttConnectState { connected, disconnected, connecting }
+
+class MqttManager extends GetxController {
+  MqttManager({this.mqttModel, this.rsaFile});
+  MqttModel mqttModel;
   MqttServerClient _client;
-
-  MQTTManager() {
-    controller = Get.find<MqttController>();
-  }
-
-  final username = 'unused';
+  String rsaFile;
+  var appConnectionState = MqttConnectState.disconnected;
+  final username = 'unused'; //unused but required dont delete
   String password;
 
+  var _history = '';
+  String get history => _history;
+  set history(val) => _history = val;
+
+  var _received = '';
+  String get received => _received;
+  set received(value) {
+    _received = value;
+    history = history + '\n' + received;
+  }
+
+  var _lastRxTopic = 'no topic available';
+  String get lastRxTopic => _lastRxTopic;
+  set lastRxTopic(val) => _lastRxTopic = val;
+
+  var _lastRxMsg = 'no message available';
+  String get lastRxMsg => this._lastRxMsg;
+  set lastRxMsg(val) => this._lastRxMsg = val;
+
+  @override
+  Future<void> onInit() async {
+    super.onInit();
+    rsaFile = await getRsaFilePath(rsaPrivateKey);
+    loadModelData();
+  }
+
+  bool loadModelData() {
+    mqttModel = GetStorage().read('mqqtdata');
+    if (mqttModel == null ||
+        mqttModel.host == null ||
+        mqttModel.host.isEmpty) //check if box has anything in it
+    {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   void initializeMQTTClient() {
+    if (!loadModelData()) {
+      print('GetStorage returned a empty or null instance');
+      return;
+    }
     _client = MqttServerClient(
-      controller.host,
-      controller.identifier,
+      mqttModel.host,
+      mqttModel.identifier,
       maxConnectionAttempts: 1,
     );
-    _client.port = int.parse(controller.mqttModel.port); // 8883;
-    _client.keepAlivePeriod = controller.mqttModel.keepAlivePeriod; //20;
+    _client.port = int.parse(mqttModel.port); // 8883;
+    _client.keepAlivePeriod = mqttModel.keepAlivePeriod; //20;
     _client.onDisconnected = onDisconnected;
     _client.secure = true;
     _client.logging(on: true);
@@ -70,7 +115,7 @@ class MQTTManager {
     jBuilder.jsonContent = claims.toJson();
     // add a key to sign, can only add one for JWT
 
-    var key = JsonWebKey.fromPem(File(controller.rsaFile).readAsStringSync());
+    var key = JsonWebKey.fromPem(File(rsaFile).readAsStringSync());
     jBuilder.addRecipient(key, algorithm: 'RS256');
 
     var jws = jBuilder.build();
@@ -81,13 +126,13 @@ class MQTTManager {
 
     final context = SecurityContext.defaultContext;
     //context.setTrustedCertificates(controller.rsaFile); //bad pkcs..
-    context.usePrivateKey(controller.rsaFile);
+    context.usePrivateKey(rsaFile);
     //List<int> bytes = utf8.encode(controller.privateKey());
     //context.usePrivateKeyBytes(bytes);
     _client.securityContext = context;
 
     final MqttConnectMessage connMess = MqttConnectMessage()
-        .withClientIdentifier(controller.identifier)
+        .withClientIdentifier(mqttModel.identifier)
         //.withWillTopic('') //controller.mqttModel.willTopic)
         //.withWillMessage('') //controller.mqttModel.willMessage)
         .startClean() // Non persistent session for testing
@@ -98,7 +143,7 @@ class MQTTManager {
 
   // Connect to the host
   void connect() async {
-    controller.appConnectionState = MQTTAppConnectionState.connecting;
+    appConnectionState = MqttConnectState.connecting;
     try {
       await _client.connect(username, password);
     } on NoConnectionException catch (e) {
@@ -112,7 +157,7 @@ class MQTTManager {
     }
 
     if (_client.connectionStatus.state == MqttConnectionState.connected) {
-      controller.appConnectionState = MQTTAppConnectionState.connected;
+      appConnectionState = MqttConnectState.connected;
       print('iotcore client connected -----------------------');
     } else {
       print('ERROR iotcore client connection failed - disconnecting,' +
@@ -123,7 +168,7 @@ class MQTTManager {
 
   void disconnect() {
     print('Disconnected');
-    _client.unsubscribe(controller.topic);
+    _client.unsubscribe(mqttModel.topic);
     _client.disconnect();
   }
 
@@ -135,7 +180,7 @@ class MQTTManager {
     //client.subscribe(pubTopic, MqttQos.exactlyOnce);
 
     _client.publishMessage(
-        controller.topic, MqttQos.atMostOnce, builder.payload);
+        mqttModel.topic, MqttQos.atMostOnce, builder.payload);
   }
 
   /// The subscribed callback
@@ -162,18 +207,18 @@ class MQTTManager {
         MqttConnectReturnCode.noneSpecified) {
       print('ims: OnDisconnected callback is solicited, this is correct');
     }
-    controller.appConnectionState = MQTTAppConnectionState.disconnected;
+    appConnectionState = MqttConnectState.disconnected;
   }
 
   /// The successful connect callback
   void onConnected() {
     print('ims: OnConnected callback');
 
-    controller.appConnectionState = MQTTAppConnectionState.connected;
+    appConnectionState = MqttConnectState.connected;
     print('ims: client connected....');
 
-    _client.subscribe(controller.topic, MqttQos.atMostOnce);
-    print('ims: subscribe to - ${controller.topic}');
+    _client.subscribe(mqttModel.topic, MqttQos.atMostOnce);
+    print('ims: subscribe to - ${mqttModel.topic}');
 
     /// The client has a change notifier object(see the Observable class)
     /// which we then listen to to get notifications of published updates
@@ -182,9 +227,9 @@ class MQTTManager {
       final MqttPublishMessage recMess = c[0].payload;
       final String pt =
           MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-      controller.received = pt;
-      controller.lastRxMsg = pt;
-      controller.lastRxTopic = controller.topic;
+      received = pt;
+      lastRxMsg = pt;
+      lastRxTopic = mqttModel.topic;
       //_currentState.setReceivedText(pt);
       print(
           'ims: Change notification:: topic is <${c[0].topic}>, payload is <-- $pt -->');
@@ -196,9 +241,9 @@ class MQTTManager {
   void onAutoReconnect() {
     var status = _client.connectionStatus.returnCode;
     if (status == MqttConnectReturnCode.connectionAccepted)
-      controller.appConnectionState = MQTTAppConnectionState.connected;
+      appConnectionState = MqttConnectState.connected;
     else
-      controller.appConnectionState = MQTTAppConnectionState.disconnected;
+      appConnectionState = MqttConnectState.disconnected;
     print('ims: $status');
     print(
         'ims: onAutoReconnect client callback - Client auto reconnection sequence will start');
@@ -208,9 +253,9 @@ class MQTTManager {
   void onAutoReconnected() {
     var status = _client.connectionStatus.returnCode;
     if (status == MqttConnectReturnCode.connectionAccepted)
-      controller.appConnectionState = MQTTAppConnectionState.connected;
+      appConnectionState = MqttConnectState.connected;
     else
-      controller.appConnectionState = MQTTAppConnectionState.disconnected;
+      appConnectionState = MqttConnectState.disconnected;
     // = MqttConnectReturnCode.values;
     print('ims: $status');
     print(

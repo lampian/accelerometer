@@ -1,7 +1,8 @@
 import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/controllers/home_controller.dart';
 import 'package:accelerometer/controllers/mqtt_config_controller.dart';
-import 'package:accelerometer/controllers/mqtt_controller.dart';
+import 'package:accelerometer/controllers/mqtt_model_detail_controller.dart';
+import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/views/home.dart';
 import 'package:accelerometer/views/level_trig_setup.dart';
 import 'package:accelerometer/views/login.dart';
@@ -26,8 +27,9 @@ class Root extends GetWidget<AuthController> {
           Get.put<TimingSetupController>(TimingSetupController());
           Get.put<VSController>(VSController(), tag: 'start');
           Get.put<VSController>(VSController(), tag: 'end');
-          Get.put<MqttController>(MqttController());
+          Get.put<MqttManager>(MqttManager());
           Get.put<MqttConfigController>(MqttConfigController());
+          Get.put<MqttModelDetailController>(MqttModelDetailController());
           return Home();
         } else {
           return Login();

@@ -1,12 +1,15 @@
-import 'package:accelerometer/controllers/home_controller.dart';
 import 'package:accelerometer/controllers/mqtt_config_controller.dart';
 import 'package:accelerometer/models/mqtt_model.dart';
+import 'package:accelerometer/services/mqtt_manager.dart';
+import 'package:accelerometer/views/mqtt_model_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 class MqttConfig extends GetWidget<MqttConfigController> {
   @override
   Widget build(BuildContext context) {
+    controller.mqttManager = Get.find<MqttManager>();
     return OrientationBuilder(
       builder: (context, orientation) {
         return Scaffold(
@@ -90,6 +93,9 @@ class MqttConfig extends GetWidget<MqttConfigController> {
       case Mode.copy:
         icon = Icons.copy_sharp;
         break;
+      case Mode.configure:
+        icon = Icons.developer_board;
+        break;
       default:
         icon = Icons.view_agenda_sharp;
     }
@@ -100,7 +106,7 @@ class MqttConfig extends GetWidget<MqttConfigController> {
     return Visibility(
       visible: controller.mode == Mode.create ? true : false,
       child: FloatingActionButton(
-        onPressed: () => handleItemOnTap(),
+        onPressed: () {}, //create new model
         child: Icon(
           Icons.add,
           color: Colors.white,
@@ -127,12 +133,13 @@ class MqttConfig extends GetWidget<MqttConfigController> {
     return Column(
       children: [
         ListTile(
+          enabled: controller.mode == Mode.create ? false : true,
           leading: Text(mqttModel.isPub ? 'Pub' : 'Sub'),
           title: Text(mqttModel.topic),
           subtitle: Text(mqttModel.identifier),
           //trailing: Text(mqttModel.qos.toString()),
           tileColor: Colors.grey[700],
-          onTap: () => handleItemOnTap(),
+          onTap: () => handleItemOnTap(mqttModel),
         ),
         Divider(height: 3),
       ],
@@ -152,19 +159,26 @@ class MqttConfig extends GetWidget<MqttConfigController> {
     );
   }
 
-  void handleItemOnTap() {
+  void handleItemOnTap(MqttModel aMqttModel) {
     switch (controller.mode) {
       case Mode.create:
         break;
       case Mode.read:
-        final homeCntl = Get.find<HomeController>();
-        // homeCntl.
+        Get.to(MqttModelDetail(aMqttModel, true));
         break;
       case Mode.update:
+        Get.to(MqttModelDetail(aMqttModel, false));
         break;
       case Mode.delete:
         break;
       case Mode.copy:
+        break;
+      case Mode.configure:
+        var box = GetStorage();
+        box.write('mqttdata', aMqttModel);
+        controller.mqttManager.disconnect();
+        controller.mqttManager.initializeMQTTClient();
+        controller.mqttManager.connect();
         break;
       default:
     }

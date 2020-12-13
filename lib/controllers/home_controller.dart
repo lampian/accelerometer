@@ -565,9 +565,9 @@ class HomeController extends GetxController {
     }
   }
 
-  MQTTManager mqttManager;
+  MqttManager mqttManager;
   void mqttConfigureAndConnect() {
-    mqttManager = MQTTManager();
+    mqttManager = MqttManager();
     mqttManager.initializeMQTTClient();
     mqttManager.connect();
   }
