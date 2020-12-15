@@ -15,6 +15,7 @@ Future<File> get _localFile async {
 
 Future<String> writePrivateKey(String aKey) async {
   final file = await _localFile;
+  await file.writeAsString(aKey);
   return file.path.toString();
 }
 

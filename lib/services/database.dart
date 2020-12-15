@@ -71,22 +71,6 @@ class Database {
   //   });
   // }
 
-  Stream<List<MqttModel>> userMqttStream(String uid) {
-    return _firestore
-        .collection("users")
-        .doc(uid)
-        .collection("mqtt")
-        //.orderBy("name", descending: false)
-        .snapshots()
-        .map((QuerySnapshot query) {
-      List<MqttModel> retVal = List();
-      query.docs.forEach((element) {
-        retVal.add(MqttModel.fromDocumentSnapshot(documentSnapshot: element));
-      });
-      return retVal;
-    });
-  }
-
   // Stream<List<Thing>> thingsStream() {
   //   return _firestore
   //       .collection("things")
@@ -194,6 +178,23 @@ class Database {
   //   }
   // }
 
+  Stream<List<MqttModel>> userMqttStream(String uid) {
+    var strm = _firestore
+        .collection("users")
+        .doc(uid)
+        .collection("mqtt")
+        //.orderBy("name", descending: false)
+        .snapshots()
+        .map((QuerySnapshot query) {
+      List<MqttModel> retVal = List();
+      query.docs.forEach((element) {
+        retVal.add(MqttModel.fromDocumentSnapshot(documentSnapshot: element));
+      });
+      return retVal;
+    });
+    return strm;
+  }
+
   Future<void> addMqttToUser(String uid, MqttModel mqtt) async {
     try {
       //if true, add room id to users rooms collection
@@ -208,5 +209,36 @@ class Database {
       print('ims: database $e');
       rethrow;
     }
+  }
+
+  Future<bool> updateMqttAtUser(String uid, MqttModel mqtt) async {
+    try {
+      await _firestore
+          .collection("users")
+          .doc(uid)
+          .collection("mqtt")
+          .doc(mqtt.id)
+          //.update(mqtt.toJson());
+          .set(mqtt.toJson()); //also works
+    } catch (e) {
+      print('ims: database $e');
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> deleteMqttAtUser(String uid, MqttModel mqtt) async {
+    try {
+      await _firestore
+          .collection("users")
+          .doc(uid)
+          .collection("mqtt")
+          .doc(mqtt.id)
+          .delete();
+    } catch (e) {
+      print('ims: database $e');
+      return false;
+    }
+    return true;
   }
 }

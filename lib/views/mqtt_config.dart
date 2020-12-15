@@ -1,8 +1,10 @@
 import 'package:accelerometer/controllers/mqtt_config_controller.dart';
 import 'package:accelerometer/models/mqtt_model.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
+import 'package:accelerometer/utils/storage.dart';
 import 'package:accelerometer/views/mqtt_model_detail.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_guid/flutter_guid.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -96,6 +98,9 @@ class MqttConfig extends GetWidget<MqttConfigController> {
       case Mode.configure:
         icon = Icons.developer_board;
         break;
+      case Mode.test:
+        icon = Icons.science_sharp;
+        break;
       default:
         icon = Icons.view_agenda_sharp;
     }
@@ -106,7 +111,7 @@ class MqttConfig extends GetWidget<MqttConfigController> {
     return Visibility(
       visible: controller.mode == Mode.create ? true : false,
       child: FloatingActionButton(
-        onPressed: () {}, //create new model
+        onPressed: () => handleItemOnTap(null), //create new model
         child: Icon(
           Icons.add,
           color: Colors.white,
@@ -122,9 +127,11 @@ class MqttConfig extends GetWidget<MqttConfigController> {
     } else if (controller.mqttList.isEmpty) {
       return Text('Nothing to show');
     } else {
-      return ListView.builder(
-        itemCount: controller.mqttList.length,
-        itemBuilder: (_, index) => listTile(controller.mqttList[index]),
+      return GetX<MqttConfigController>(
+        builder: (_) => ListView.builder(
+          itemCount: _.mqttList.length,
+          itemBuilder: (__, index) => listTile(_.mqttList[index]),
+        ),
       );
     }
   }
@@ -159,26 +166,56 @@ class MqttConfig extends GetWidget<MqttConfigController> {
     );
   }
 
-  void handleItemOnTap(MqttModel aMqttModel) {
+  Future<void> handleItemOnTap(MqttModel aMqttModel) async {
+    final Guid aGUID = Guid.newGuid;
+    final idText = aGUID.value;
     switch (controller.mode) {
       case Mode.create:
+        controller.editDetail(controller.getEmptyModel(idText), false);
         break;
       case Mode.read:
-        Get.to(MqttModelDetail(aMqttModel, true));
+        controller.editDetail(aMqttModel, true);
         break;
       case Mode.update:
-        Get.to(MqttModelDetail(aMqttModel, false));
+        controller.editDetail(aMqttModel, false);
         break;
       case Mode.delete:
+        var result = await Get.defaultDialog<bool>(
+          title: 'Deleting item',
+          middleText: 'Are you sure?',
+          onCancel: () {
+            Get.back(result: false, canPop: true);
+          },
+          onConfirm: () {
+            Get.back(result: true);
+          },
+        );
+        if (result == true) {
+          result = await controller.removeItem(aMqttModel);
+          Get.snackbar(
+            result ? 'Confirmation' : 'Error',
+            result ? 'Operation suceeded' : 'Operation failed',
+            snackPosition: SnackPosition.BOTTOM,
+            snackStyle: SnackStyle.GROUNDED,
+          );
+        }
         break;
       case Mode.copy:
+        aMqttModel.id = idText;
+        controller.editDetail(aMqttModel, false);
         break;
       case Mode.configure:
-        var box = GetStorage();
-        box.write('mqttdata', aMqttModel);
+        Storage.storeMqttModel(aMqttModel);
         controller.mqttManager.disconnect();
-        controller.mqttManager.initializeMQTTClient();
-        controller.mqttManager.connect();
+        if (controller.mqttManager.initializeMQTTClient())
+          controller.mqttManager.connect();
+        break;
+      case Mode.test:
+        // Storage.storeMqttModel(aMqttModel);
+        // controller.mqttManager.disconnect();
+        // if (controller.mqttManager.initializeMQTTClient())
+        //   controller.mqttManager.connect();
+        controller.mqttManager.publish('message');
         break;
       default:
     }

@@ -1,6 +1,8 @@
+import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/models/mqtt_model.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:accelerometer/services/database.dart';
 
 class MqttModelDetailController extends GetxController {
   TextEditingController idTEC;
@@ -94,5 +96,55 @@ class MqttModelDetailController extends GetxController {
     willTopic = mqttModel.willTopic;
     willMessage = mqttModel.willMessage;
     update();
+  }
+
+  bool validateMqttData() {
+    if (readOnly) return false;
+    if (idTEC.value.isNullOrBlank) return false;
+    if (identifierTEC.value.isNullOrBlank) return false;
+    if (hostTEC.value.isNullOrBlank) return false;
+    if (topicTEC.value.isNullOrBlank) return false;
+    port = portTEC.value.isNullOrBlank ? "443" : port;
+    keepAlive = keepAliveTEC.value.isNullOrBlank ? "60" : keepAlive;
+    qos = qosTEC.value.isNullOrBlank ? "0" : qos;
+    isPub = isPub.isNullOrBlank ? 'true' : isPub;
+    secure = _secure.isNullOrBlank ? true : secure;
+    logging = logging.isNullOrBlank ? false : logging;
+    willTopic = '';
+    willMessage = '';
+    return true;
+  }
+
+  MqttModel buildModel() {
+    return MqttModel(
+      host: host,
+      id: id,
+      identifier: identifier,
+      isPub: isPub,
+      keepAlivePeriod: int.parse(keepAlive),
+      logging: logging,
+      port: port,
+      qos: int.parse(qos),
+      secure: secure,
+      topic: topic,
+      willMessage: willMessage,
+      willTopic: willTopic,
+    );
+  }
+
+  //this operation saves to firebase
+  // saving to local storage is done in mqttcoonfig device write
+  Future<bool> saveMqtt() async {
+    if (validateMqttData()) {
+      if (!readOnly) {
+        var user = Get.find<AuthController>().user;
+        if (await Database().updateMqttAtUser(user.uid, buildModel())) {
+          return true;
+        }
+        return false;
+      }
+      return true;
+    }
+    return false;
   }
 }

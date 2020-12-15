@@ -91,17 +91,17 @@ class MqttModelDetail extends GetWidget<MqttModelDetailController> {
             return switchBox(
                 'Subscribe', 'Publish', _.isPub, _.isPubChanged, enabled);
           })),
-          SizedBox(height: 6),
-          textBox(ctl: controller.hostTEC, lbl: 'host', enable: enabled),
-          SizedBox(height: 6),
+          SizedBox(height: 8),
+          textBox(ctl: controller.hostTEC, lbl: '*host', enable: enabled),
+          SizedBox(height: 8),
           textBox(ctl: controller.portTEC, lbl: 'port', enable: enabled),
-          SizedBox(height: 6),
-          textBox(ctl: controller.topicTEC, lbl: 'topic', enable: enabled),
-          SizedBox(height: 6),
-          textBox(ctl: controller.identifierTEC, lbl: 'id', enable: enabled),
-          SizedBox(height: 6),
+          SizedBox(height: 8),
+          textBox(ctl: controller.topicTEC, lbl: '*topic', enable: enabled),
+          SizedBox(height: 8),
+          textBox(ctl: controller.identifierTEC, lbl: '*id', enable: enabled),
+          SizedBox(height: 8),
           textBox(ctl: controller.keepAliveTEC, lbl: 'period', enable: enabled),
-          SizedBox(height: 6),
+          SizedBox(height: 8),
           textBox(ctl: controller.qosTEC, lbl: 'QoS', enable: enabled),
         ],
       ),
@@ -126,8 +126,8 @@ class MqttModelDetail extends GetWidget<MqttModelDetailController> {
             FlutterSwitch(
               value: value,
               onToggle: (val) => func(val),
-              activeColor: Colors.grey[600],
-              inactiveColor: Colors.grey[600],
+              activeColor: Colors.blueGrey[700],
+              inactiveColor: Colors.blueGrey[700],
             ),
           ],
         ),
@@ -192,12 +192,12 @@ class MqttModelDetail extends GetWidget<MqttModelDetailController> {
           Get.back();
         },
         style: ElevatedButton.styleFrom(
-          primary: Colors.yellow[800],
+          primary: Colors.blueGrey[600],
           elevation: 15.0,
           shadowColor: Colors.grey[700],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
-            side: BorderSide(color: Colors.grey[600]),
+            side: BorderSide(color: Colors.grey[700]),
           ),
         ),
       ),
@@ -208,16 +208,28 @@ class MqttModelDetail extends GetWidget<MqttModelDetailController> {
     return GetBuilder<MqttModelDetailController>(
       builder: (_) => ElevatedButton(
         child: Text(controller.readOnly ? 'Ok' : 'Save and return'),
-        onPressed: () {
-          Get.back();
+        onPressed: () async {
+          if (await controller.saveMqtt()) {
+            //Get.snackbar('Saved', 'Save operation succeeded');
+            Get.back();
+          } else {
+            print('mqtModelDetail - save to firestore failed');
+            Get.snackbar(
+              'Error',
+              'Save operation failed,'
+                  ' check data entered and connection',
+              snackPosition: SnackPosition.BOTTOM,
+              snackStyle: SnackStyle.GROUNDED,
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
-          primary: Colors.yellow[800],
+          primary: Colors.blueGrey[600],
           elevation: 15.0,
           shadowColor: Colors.grey[700],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
-            side: BorderSide(color: Colors.grey[600]),
+            side: BorderSide(color: Colors.grey[700]),
           ),
         ),
       ),

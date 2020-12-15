@@ -22,12 +22,12 @@ class Root extends GetWidget<AuthController> {
 
         print('ims: root user- ${aUser.email}');
         if (controller.user?.uid != null) {
+          Get.put<MqttManager>(MqttManager());
           Get.put<HomeController>(HomeController());
           Get.put<LevelTrigController>(LevelTrigController());
           Get.put<TimingSetupController>(TimingSetupController());
           Get.put<VSController>(VSController(), tag: 'start');
           Get.put<VSController>(VSController(), tag: 'end');
-          Get.put<MqttManager>(MqttManager());
           Get.put<MqttConfigController>(MqttConfigController());
           Get.put<MqttModelDetailController>(MqttModelDetailController());
           return Home();

@@ -51,6 +51,7 @@ class HomeController extends GetxController {
   var zoomMin = 0.0;
   var zoomMax = 100.0;
   var samplePeriod = 250; //must be > 0
+  MqttManager mqttMan;
 
   var _waiting = false.obs;
   bool get waiting => _waiting.value;
@@ -79,6 +80,7 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     sensor.startStream(samplePeriod: samplePeriod);
+    mqttMan = Get.find<MqttManager>();
   }
 
   @override
@@ -277,6 +279,8 @@ class HomeController extends GetxController {
         currentMode = mode;
         if (command == commands.run) {
           currentState = states.waiting;
+        } else if (command == commands.run) {
+          currentMode = mode;
         }
         break;
       case states.waiting:
@@ -304,6 +308,8 @@ class HomeController extends GetxController {
       case states.viewing:
         if (command == commands.run) {
           currentState = states.waiting;
+        } else if (command == commands.run) {
+          currentMode = mode;
         }
         break;
       default:
@@ -318,84 +324,90 @@ class HomeController extends GetxController {
   // execute acions required when change of state.
   // [ 'Level', 'Timer', 'Auto'];
   void stateExecute({bool modeChanged, bool stateChanged}) {
-    if (!stateChanged) return;
-    switch (currentState) {
-      case states.stopped:
-        //subscription.pause();
-        updateData = false;
-        break;
-      case states.waiting:
-        aList.clear();
-        waiting = true;
-        //auto start - auto stop
-        if (trigStartText.value == triggerType[2] &&
-            trigStopText.value == triggerType[2]) {
+    if (stateChanged) {
+      switch (currentState) {
+        case states.stopped:
+          //subscription.pause();
+          updateData = false;
+          break;
+        case states.waiting:
+          aList.clear();
+          waiting = true;
+          //auto start - auto stop
+          if (trigStartText.value == triggerType[2] &&
+              trigStopText.value == triggerType[2]) {
+            //subscription.resume();
+            updateData = true;
+            stateMan(command: commands.start, mode: currentMode);
+            stateExecute(modeChanged: false, stateChanged: true);
+            //timer start - auto stop
+          } else if (trigStartText.value == triggerType[1] &&
+              trigStopText.value == triggerType[2]) {
+            enableStartTimeout();
+            // timer start - timer stop
+          } else if (trigStartText.value == triggerType[1] &&
+              trigStopText.value == triggerType[1]) {
+            enableStartStopTimeout();
+            // timer start - level stop
+          } else if (trigStartText.value == triggerType[1] &&
+              trigStopText.value == triggerType[0]) {
+            enableStartTimeout();
+            // auto start - timerstop
+          } else if (trigStartText.value == triggerType[2] &&
+              trigStopText.value == triggerType[1]) {
+            enableStopTimeout();
+            // auto start - level stop
+          } else if (trigStartText.value == triggerType[2] &&
+              trigStopText.value == triggerType[0]) {
+            updateData = true;
+            stateMan(command: commands.start, mode: currentMode);
+            stateExecute(modeChanged: false, stateChanged: true);
+            // level start => level handler will take care of stop
+          } else if (trigStartText.value == triggerType[0]) {
+            // updateData = true;
+            // stateMan(command: commands.start, mode: currentMode);
+            // stateExecute(modeChanged: false, stateChanged: true);
+            print(' level trigger');
+          } else {
+            print('home controller - condition not detected');
+            throw ProcessException;
+          }
+          break;
+        case states.capturing:
+          //subscription.resume();
+          waiting = false;
+          updateData = true;
+          break;
+        case states.persisting:
           //subscription.resume();
           updateData = true;
-          stateMan(command: commands.start, mode: currentMode);
-          stateExecute(modeChanged: false, stateChanged: true);
-          //timer start - auto stop
-        } else if (trigStartText.value == triggerType[1] &&
-            trigStopText.value == triggerType[2]) {
-          enableStartTimeout();
-          // timer start - timer stop
-        } else if (trigStartText.value == triggerType[1] &&
-            trigStopText.value == triggerType[1]) {
-          enableStartStopTimeout();
-          // timer start - level stop
-        } else if (trigStartText.value == triggerType[1] &&
-            trigStopText.value == triggerType[0]) {
-          enableStartTimeout();
-          // auto start - timerstop
-        } else if (trigStartText.value == triggerType[2] &&
-            trigStopText.value == triggerType[1]) {
-          enableStopTimeout();
-          // auto start - level stop
-        } else if (trigStartText.value == triggerType[2] &&
-            trigStopText.value == triggerType[0]) {
-          updateData = true;
-          stateMan(command: commands.start, mode: currentMode);
-          stateExecute(modeChanged: false, stateChanged: true);
-          // level start => level handler will take care of stop
-        } else if (trigStartText.value == triggerType[0]) {
-          // updateData = true;
-          // stateMan(command: commands.start, mode: currentMode);
-          // stateExecute(modeChanged: false, stateChanged: true);
-          print(' level trigger');
-        } else {
-          print('home controller - condition not detected');
-          throw ProcessException;
-        }
-        break;
-      case states.capturing:
-        //subscription.resume();
-        waiting = false;
-        updateData = true;
-        break;
-      case states.persisting:
-        //subscription.resume();
-        updateData = true;
-        break;
-      case states.viewing:
-        print('states: viewing');
-        zoomMin = 0.0;
-        zoomMax = 100.0;
-        updateData = false;
-        update();
-        break;
-      default:
-        break;
+          break;
+        case states.viewing:
+          print('states: viewing');
+          zoomMin = 0.0;
+          zoomMax = 100.0;
+          updateData = false;
+          update();
+          break;
+        default:
+          break;
+      }
+      stateChanged = false;
     }
-    stateChanged = false;
+    if (modeChanged) {
+      if (currentMode == modes.capture) {
+        //mode changed to capture
+        //activate mqtt client
+        if (mqttMan.initializeMQTTClient()) {
+          mqttMan.connect();
+        }
+      } else if (currentMode == modes.persist) {
+        //mode changed to persist
+        //deactivate mqqtt client
+        mqttMan.disconnect();
+      }
+    }
   }
-
-  // void handleStopGo() {
-  //   if (subscription.isPaused) {
-  //     subscription.resume();
-  //   } else {
-  //     subscription.pause();
-  //   }
-  // }
 
   final cmndsText = ['Run', 'Stop'];
   var _cmndText = 'Stop'.obs;
@@ -476,6 +488,15 @@ class HomeController extends GetxController {
     } else {
       modeText.value = modesText.first;
     }
+    //capture
+    if (modeText.value == modesText[0]) {
+      stateMan(command: commands.none, mode: modes.capture);
+    }
+    //persist
+    else if (modeText.value == modesText[1]) {
+      stateMan(command: commands.none, mode: modes.capture);
+    }
+    stateExecute(modeChanged: modeChanged, stateChanged: stateChanged);
   }
 
   var waitForDuration = Duration(seconds: 5);

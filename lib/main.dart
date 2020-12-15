@@ -8,8 +8,8 @@ import 'controllers/bindings/authBinding.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
   await GetStorage.init();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 

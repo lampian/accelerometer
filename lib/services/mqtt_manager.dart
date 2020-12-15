@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:accelerometer/certificate/keys.dart';
 import 'package:accelerometer/certificate/rsa_file_handler.dart';
 import 'package:accelerometer/models/mqtt_model.dart';
+import 'package:accelerometer/utils/storage.dart';
 import 'package:get/state_manager.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:jose/jose.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
@@ -14,11 +14,13 @@ enum MqttConnectState { connected, disconnected, connecting }
 class MqttManager extends GetxController {
   MqttManager({this.mqttModel, this.rsaFile});
   MqttModel mqttModel;
-  MqttServerClient _client;
   String rsaFile;
+
+  MqttServerClient _client;
   var appConnectionState = MqttConnectState.disconnected;
   final username = 'unused'; //unused but required dont delete
   String password;
+  var onInitFailure = false;
 
   var _history = '';
   String get history => _history;
@@ -42,27 +44,25 @@ class MqttManager extends GetxController {
   @override
   Future<void> onInit() async {
     super.onInit();
-    rsaFile = await getRsaFilePath(rsaPrivateKey);
-    loadModelData();
-  }
-
-  bool loadModelData() {
-    mqttModel = GetStorage().read('mqqtdata');
-    if (mqttModel == null ||
-        mqttModel.host == null ||
-        mqttModel.host.isEmpty) //check if box has anything in it
-    {
-      return false;
-    } else {
-      return true;
+    try {
+      rsaFile = await getRsaFilePath(privateKey); //rsaPrivateKey);
+    } catch (e) {
+      print('mqtt manager - onInit : $e');
+      onInitFailure = true;
     }
+
+    mqttModel = Storage.retrieveMqttModel();
   }
 
-  void initializeMQTTClient() {
-    if (!loadModelData()) {
+  bool initializeMQTTClient() {
+    mqttModel = Storage.retrieveMqttModel();
+    if (mqttModel.id == null || mqttModel.host == null) {
       print('GetStorage returned a empty or null instance');
-      return;
+      return false;
+    } else if (onInitFailure) {
+      return false;
     }
+
     _client = MqttServerClient(
       mqttModel.host,
       mqttModel.identifier,
@@ -114,8 +114,9 @@ class MqttManager extends GetxController {
     JsonWebSignatureBuilder jBuilder = JsonWebSignatureBuilder();
     jBuilder.jsonContent = claims.toJson();
     // add a key to sign, can only add one for JWT
-
-    var key = JsonWebKey.fromPem(File(rsaFile).readAsStringSync());
+    final pemStr = File(rsaFile).readAsStringSync();
+    var key = JsonWebKey.fromPem(pemStr);
+    //var key = JsonWebKey.fromPem(privateKey);
     jBuilder.addRecipient(key, algorithm: 'RS256');
 
     var jws = jBuilder.build();
@@ -139,6 +140,7 @@ class MqttManager extends GetxController {
         .withWillQos(MqttQos.atMostOnce); //  MqttQos.atLeastOnce);
     print('ims: client connecting....');
     _client.connectionMessage = connMess;
+    return true;
   }
 
   // Connect to the host
@@ -168,6 +170,17 @@ class MqttManager extends GetxController {
 
   void disconnect() {
     print('Disconnected');
+
+    if (_client == null) {
+      return;
+    } else {
+      var conState = _client.connectionStatus.returnCode;
+      print(conState);
+      if (conState != MqttConnectReturnCode.connectionAccepted) {
+        return;
+      }
+    }
+
     _client.unsubscribe(mqttModel.topic);
     _client.disconnect();
   }
@@ -231,8 +244,8 @@ class MqttManager extends GetxController {
       lastRxMsg = pt;
       lastRxTopic = mqttModel.topic;
       //_currentState.setReceivedText(pt);
-      print(
-          'ims: Change notification:: topic is <${c[0].topic}>, payload is <-- $pt -->');
+      print('ims: Change notification:: topic is <${c[0].topic}>,'
+          ' payload is <-- $pt -->');
       print('');
     });
   }
