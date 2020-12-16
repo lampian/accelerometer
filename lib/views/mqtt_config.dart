@@ -1,5 +1,6 @@
 import 'package:accelerometer/controllers/mqtt_config_controller.dart';
 import 'package:accelerometer/models/mqtt_model.dart';
+import 'package:accelerometer/models/sensor_model.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/utils/storage.dart';
 import 'package:accelerometer/views/mqtt_model_detail.dart';
@@ -215,7 +216,17 @@ class MqttConfig extends GetWidget<MqttConfigController> {
         // controller.mqttManager.disconnect();
         // if (controller.mqttManager.initializeMQTTClient())
         //   controller.mqttManager.connect();
-        controller.mqttManager.publish('message');
+        var model = SensorModel(
+          channel: 1,
+          timeStamp: DateTime(2020, 12, 1, 12, 30, 20, 123),
+          valueX: 2,
+          valueY: -3,
+          valueZ: 4,
+        );
+        var aList = <SensorModel>[];
+        aList.add(model);
+        controller.mqttManager
+            .publish(SensorModelConvert.toJsonBase64('1000', aList));
         break;
       default:
     }
