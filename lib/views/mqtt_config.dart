@@ -207,26 +207,43 @@ class MqttConfig extends GetWidget<MqttConfigController> {
         break;
       case Mode.configure:
         Storage.storeMqttModel(aMqttModel);
-        controller.mqttManager.disconnect();
-        if (controller.mqttManager.initializeMQTTClient())
-          controller.mqttManager.connect();
+        Get.snackbar('Confirmation:', 'Mqtt information stored locally',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.grey[700],
+            duration: Duration(seconds: 5));
         break;
       case Mode.test:
-        // Storage.storeMqttModel(aMqttModel);
-        // controller.mqttManager.disconnect();
-        // if (controller.mqttManager.initializeMQTTClient())
-        //   controller.mqttManager.connect();
-        var model = SensorModel(
-          channel: 1,
-          timeStamp: DateTime(2020, 12, 1, 12, 30, 20, 123),
-          valueX: 2,
-          valueY: -3,
-          valueZ: 4,
-        );
-        var aList = <SensorModel>[];
-        aList.add(model);
-        controller.mqttManager
-            .publish(SensorModelConvert.toJsonBase64('1000', aList));
+        controller.mqttManager.disconnect();
+        if (controller.mqttManager.initializeMQTTClient()) {
+          controller.mqttManager.connect();
+          var model = SensorModel(
+            channel: 1,
+            timeStamp: DateTime(2020, 12, 1, 12, 30, 20, 123),
+            valueX: 2,
+            valueY: -3,
+            valueZ: 4,
+          );
+          var aList = <SensorModel>[];
+          aList.add(model);
+          if (await controller.mqttManager.isConnectedAsync()) {
+            controller.mqttManager
+                .publish(SensorModelConvert.toJsonEncoded('1000', aList));
+            controller.mqttManager.disconnect();
+            Get.snackbar(
+                'Confirmation:',
+                'Test complete.'
+                    '\nMqtt initialised, message published and connection closed',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.grey[700],
+                duration: Duration(seconds: 8));
+          }
+        } else {
+          Get.snackbar(
+              'Error:', 'Mqtt initialisation failed - configure device',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.grey[700],
+              duration: Duration(seconds: 5));
+        }
         break;
       default:
     }

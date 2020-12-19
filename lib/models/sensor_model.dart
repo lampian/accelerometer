@@ -34,7 +34,7 @@ class SensorModel {
 }
 
 class SensorModelConvert {
-  static String toJsonBase64(String device, List<SensorModel> modelList) {
+  static String toJsonEncoded(String device, List<SensorModel> modelList) {
     var outStr = '';
     modelList.forEach((element) {
       outStr = outStr + jsonEncode(element.toJsonMap(device)) + ',';

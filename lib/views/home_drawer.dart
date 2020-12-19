@@ -39,7 +39,7 @@ class HomeDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            title: Text('Manage Mqtt Configuration'),
+            title: Text('Toggle theme'),
             onTap: () {
               if (Get.isDarkMode) {
                 Get.changeTheme(ThemeData.light());

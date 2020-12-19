@@ -84,7 +84,7 @@ void main() {
         valueY: -3,
         valueZ: 4,
       );
-      var x = model.toJsonBase64('123456');
+      var x = model.toJsonEncoded('123456');
       var refStr =
           'eyJ0IjoxNjA2ODE4NjIwMTIzLCJkIjoxMjM0NTYsImMiOjEsInYiOjUzODV9';
       expect(x, refStr);

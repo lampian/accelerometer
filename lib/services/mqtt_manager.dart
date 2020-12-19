@@ -181,7 +181,7 @@ class MqttManager extends GetxController {
       }
     }
 
-    _client.unsubscribe(mqttModel.topic);
+    //_client.unsubscribe(mqttModel.topic);
     _client.disconnect();
   }
 
@@ -230,8 +230,9 @@ class MqttManager extends GetxController {
     appConnectionState = MqttConnectState.connected;
     print('ims: client connected....');
 
-    _client.subscribe(mqttModel.topic, MqttQos.atMostOnce);
-    print('ims: subscribe to - ${mqttModel.topic}');
+    //TODO subscribe as a seperate action
+    //_client.subscribe(mqttModel.topic, MqttQos.atMostOnce);
+    //print('ims: subscribe to - ${mqttModel.topic}');
 
     /// The client has a change notifier object(see the Observable class)
     /// which we then listen to to get notifications of published updates
@@ -271,8 +272,8 @@ class MqttManager extends GetxController {
       appConnectionState = MqttConnectState.disconnected;
     // = MqttConnectReturnCode.values;
     print('ims: $status');
-    print(
-        'ims: onAutoReconnected client callback - Client auto reconnection sequence has completed');
+    print('ims: onAutoReconnected client callback -'
+        ' Client auto reconnection sequence has completed');
   }
 
   void onUnsubscribed(String str) {
@@ -281,5 +282,27 @@ class MqttManager extends GetxController {
 
   void pong() {
     print('ims: Ping response client callback invoked');
+  }
+
+  Future<bool> isConnectedAsync() async {
+    print('app: waitUntilConnected - start : ${DateTime.now()}');
+    print('app: connection state: $appConnectionState');
+    var busy = true;
+    var timerCount = 0;
+    await Future.doWhile(() async {
+      //interrogate status vey 100msec
+      await Future.delayed(Duration(milliseconds: 100));
+      timerCount++;
+      if (appConnectionState == MqttConnectState.connected) {
+        print('app: waitUntilConnected - connected : ${DateTime.now()}');
+        busy = false;
+      } else if (timerCount > 70) {
+        //terminate after 7sec
+        print('app: waitUntilConnected - time out : ${DateTime.now()}');
+        busy = false;
+      }
+      return busy;
+    });
+    return appConnectionState == MqttConnectState.connected ? true : false;
   }
 }

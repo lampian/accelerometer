@@ -4,7 +4,7 @@ import 'package:get_storage/get_storage.dart';
 class Storage {
   static void storeMqttModel(MqttModel aModel) {
     final box = GetStorage();
-    box.erase();
+    //box.erase();
     box.write('id', aModel.id);
     box.write('host', aModel.host);
     box.write('port', aModel.port);

@@ -6,6 +6,7 @@ import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/services/sensor.dart';
 import 'package:accelerometer/views/level_trig_setup.dart';
 import 'package:accelerometer/views/timing_setup.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:sensors/sensors.dart';
@@ -48,10 +49,18 @@ class HomeController extends GetxController {
   var stopLevel = 4.0; //must be >= 0
   var stopPosEdge = false;
   var updateData = false;
+  var persistData = false;
   var zoomMin = 0.0;
   var zoomMax = 100.0;
-  var samplePeriod = 250; //must be > 0
+  var samplePeriod = 1000; //must be > 0
   MqttManager mqttMan;
+
+  //these two values are important to keep gcp costs in budget
+  //max sample per seconds = 1
+  //transmitted every 15 seconds, ie 15 samples cached and published
+  //every 15 seconds. Faster on average over 30 days might incure gcp costs
+  final mqttBufTrigLength = 15;
+  final samplingTreshold = 1000; //msec
 
   var _waiting = false.obs;
   bool get waiting => _waiting.value;
@@ -114,6 +123,10 @@ class HomeController extends GetxController {
         aList.add(record);
         update();
         //stdout.write(".");
+        if (persistData) {
+          print('perisist: ${record.timeStamp}');
+          mqttPublish(record, false);
+        }
       }
 
       handleLevelTrig(record);
@@ -308,7 +321,7 @@ class HomeController extends GetxController {
       case states.viewing:
         if (command == commands.run) {
           currentState = states.waiting;
-        } else if (command == commands.run) {
+        } else if (command == commands.none && mode != modes.none) {
           currentMode = mode;
         }
         break;
@@ -397,15 +410,39 @@ class HomeController extends GetxController {
     if (modeChanged) {
       if (currentMode == modes.capture) {
         //mode changed to capture
+        //deactivate mqqtt client
+        mqttMan.disconnect();
+        persistData = false;
+      } else if (currentMode == modes.persist) {
+        //mode changed to persist
+        if (Duration(milliseconds: samplePeriod) <
+            Duration(milliseconds: samplingTreshold)) {
+          Get.snackbar(
+              'Error:',
+              'Sample rate above minimum threshold,'
+                  'adjust the rate by long pressing Run control',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.grey[700],
+              duration: Duration(seconds: 5));
+          handleModePressed(); //force mode back
+          return;
+        }
+
         //activate mqtt client
         if (mqttMan.initializeMQTTClient()) {
           mqttMan.connect();
+          persistData = true;
+        } else {
+          Get.snackbar(
+              'Error:', 'Mqtt initialisation failed - configure device',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.grey[700],
+              duration: Duration(seconds: 5));
+          handleModePressed(); //force mode back
+          return;
         }
-      } else if (currentMode == modes.persist) {
-        //mode changed to persist
-        //deactivate mqqtt client
-        mqttMan.disconnect();
       }
+      modeChanged = false;
     }
   }
 
@@ -428,6 +465,7 @@ class HomeController extends GetxController {
       stateMan(command: commands.stop, mode: currentMode);
       stateExecute(modeChanged: modeChanged, stateChanged: stateChanged);
     }
+    update();
   }
 
   //final triggersText = const ['None', 'Auto', 'Timer', 'Level'];
@@ -494,7 +532,7 @@ class HomeController extends GetxController {
     }
     //persist
     else if (modeText.value == modesText[1]) {
-      stateMan(command: commands.none, mode: modes.capture);
+      stateMan(command: commands.none, mode: modes.persist);
     }
     stateExecute(modeChanged: modeChanged, stateChanged: stateChanged);
   }
@@ -586,10 +624,13 @@ class HomeController extends GetxController {
     }
   }
 
-  MqttManager mqttManager;
-  void mqttConfigureAndConnect() {
-    mqttManager = MqttManager();
-    mqttManager.initializeMQTTClient();
-    mqttManager.connect();
+  var mqttPubBuf = <SensorModel>[];
+  void mqttPublish(SensorModel aModel, bool flush) {
+    mqttPubBuf.add(aModel);
+    bool publishMessage = flush || mqttPubBuf.length >= mqttBufTrigLength;
+    if (publishMessage) {
+      mqttMan.publish(SensorModelConvert.toJsonEncoded('1000', mqttPubBuf));
+      mqttPubBuf.clear();
+    }
   }
 }

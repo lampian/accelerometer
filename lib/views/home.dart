@@ -204,8 +204,8 @@ class Home extends GetWidget<HomeController> {
   }
 
   Widget cmndButton() {
-    return GetBuilder<HomeController>(
-      id: 'cmndButton',
+    return GetX<HomeController>(
+      //id: 'cmndButton',
       builder: (_) => ElevatedButton(
         child: Text(controller.cmndText),
         onPressed: () => controller.handleCmndPressed(),
