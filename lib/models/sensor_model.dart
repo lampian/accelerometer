@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'dart:convert';
 import 'dart:math';
 
@@ -10,14 +11,20 @@ class SensorModel {
     this.valueZ,
     this.index,
   });
-  DateTime timeStamp;
-  int channel;
-  double valueX;
-  double valueY;
-  double valueZ;
-  int index;
+  DateTime timeStamp = DateTime.now();
+  int channel = 0;
+  double valueX = 0;
+  double valueY = 0;
+  double valueZ = 0;
+  int index = 0;
+
   double rms() {
-    return sqrt(valueX * valueX + valueY * valueY + valueZ * valueZ);
+    var x = valueX ?? 0;
+    var y = valueY ?? 0;
+    var z = valueZ ?? 0;
+    return sqrt(x * x + y * y + z * z);
+    //TODO null issues revisit
+    //return sqrt(valueX * valueX + valueY * valueY + valueZ * valueZ);
   }
 
   int mms2rms() {
@@ -26,7 +33,7 @@ class SensorModel {
   }
 
   Map<String, dynamic> toJsonMap(String device) => {
-        "t": timeStamp.millisecondsSinceEpoch / 1000,
+        "t": timeStamp?.millisecondsSinceEpoch ?? 0 / 1000,
         "d": int.parse(device),
         "c": channel,
         "v": mms2rms(),

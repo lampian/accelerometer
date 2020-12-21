@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'dart:async';
 import 'dart:math';
 
@@ -7,22 +8,22 @@ class SensorMockData {
   var data = <SensorModel>[];
   var lastDT = DateTime.now();
   var firstRun = false;
-  Stream<double> sensorStream;
+
   var rng = Random();
 
   Stream<double> timedCounter({
-    Duration samplePeriod,
-    int maxCount,
-    double amplitude,
-    double offset,
-    double period,
+    Duration samplePeriod = const Duration(seconds: 1),
+    int maxCount = 10,
+    double amplitude = 1.0,
+    double offset = 0.0,
+    double period = 1000.0,
   }) {
     var streamController = StreamController<double>();
-    Timer timer;
+    Timer timer = Timer(Duration(seconds: 1), () {});
     var domainVal = 0.0;
     void tick(Timer timer) {
       var modDV = domainVal % period;
-      var measureVal;
+      double measureVal;
       var randNumber = (rng.nextDouble() - 0.5) * amplitude * 1.5;
       if (modDV <= period / 4) {
         measureVal = amplitude / 2 * modDV + randNumber;
@@ -52,10 +53,9 @@ class SensorMockData {
     }
 
     void stopTimer() {
-      if (timer != null) {
-        timer.cancel();
-        timer = null;
-      }
+      //if (timer != null) {
+      timer.cancel();
+      //timer = null;
     }
 
     streamController = StreamController<double>(
@@ -63,18 +63,17 @@ class SensorMockData {
         onPause: stopTimer,
         onResume: resumeTimer,
         onCancel: stopTimer);
-
     return streamController.stream;
   }
 
   void startStream({
-    int samplePeriod,
-    int maxCount,
-    double amplitude,
-    double offset,
-    double period,
+    int samplePeriod = 100,
+    int maxCount = 50,
+    double amplitude = 1.0,
+    double offset = 0.0,
+    double period = 0.0,
   }) {
-    sensorStream = timedCounter(
+    timedCounter(
       samplePeriod: Duration(milliseconds: samplePeriod),
       amplitude: amplitude,
       offset: offset,

@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'dart:async';
 import 'dart:io';
 
@@ -6,9 +7,9 @@ import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/services/sensor.dart';
 import 'package:accelerometer/views/level_trig_setup.dart';
 import 'package:accelerometer/views/timing_setup.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:get/get.dart';
 import 'package:sensors/sensors.dart';
 
 //state machine states enums
@@ -36,14 +37,20 @@ enum states {
 final triggerType = ['Level', 'Timer', 'Auto'];
 
 class HomeController extends GetxController {
+  HomeController() {
+    //subscription = listenToStream();
+    mqttMan = MqttManager();
+  }
+  MqttManager mqttMan;
+  StreamSubscription subscription;
+
   var lastCommand = commands.stop;
   var currentState = states.stopped;
   var currentMode = modes.capture;
   var stateChanged = false;
   var modeChanged = false;
   var sensor = Sensor();
-  StreamSubscription subscription;
-  var aList = List<SensorModel>();
+  var aList = <SensorModel>[];
   var startLevel = 8.0; //must be >= 0
   var startPosEdge = true;
   var stopLevel = 4.0; //must be >= 0
@@ -53,7 +60,6 @@ class HomeController extends GetxController {
   var zoomMin = 0.0;
   var zoomMax = 100.0;
   var samplePeriod = 1000; //must be > 0
-  MqttManager mqttMan;
 
   //these two values are important to keep gcp costs in budget
   //max sample per seconds = 1
@@ -64,7 +70,7 @@ class HomeController extends GetxController {
 
   var _waiting = false.obs;
   bool get waiting => _waiting.value;
-  set waiting(value) {
+  set waiting(bool value) {
     _waiting.value = value;
     update(['cmndButton']);
   }
@@ -79,10 +85,10 @@ class HomeController extends GetxController {
   }
 
   setLevelTrigData(Map<dynamic, dynamic> map) {
-    startLevel = map['startLevel'];
-    startPosEdge = map['startPosEdge'];
-    stopLevel = map['stopLevel'];
-    stopPosEdge = map['stopPosEdge'];
+    startLevel = map['startLevel'] as double;
+    startPosEdge = map['startPosEdge'] as bool;
+    stopLevel = map['stopLevel'] as double;
+    stopPosEdge = map['stopPosEdge'] as bool;
   }
 
   @override
@@ -134,10 +140,10 @@ class HomeController extends GetxController {
   }
 
   void restartStream() {
-    if (subscription != null) {
-      subscription.cancel();
-      subscription = null;
-    }
+    // if (subscription != null) {
+    subscription?.cancel();
+    //   subscription = null;
+    // }
     sensor.startStream(samplePeriod: samplePeriod);
     initController();
   }
@@ -150,8 +156,8 @@ class HomeController extends GetxController {
         charts.Series<SensorModel, int>(
           id: 'dummy',
           //domainFn: (SensorModel dataPoint, _) => dataPoint.timeStamp,
-          domainFn: (SensorModel dataPoint, _) => dataPoint.index,
-          measureFn: (SensorModel dataPoint, _) => dataPoint.valueX,
+          domainFn: (SensorModel dataPoint, _) => dataPoint.index ?? 0,
+          measureFn: (SensorModel dataPoint, _) => dataPoint.valueX ?? 0,
           //return last x records from list
           data: returnData(),
         ),
@@ -162,8 +168,8 @@ class HomeController extends GetxController {
         charts.Series<SensorModel, int>(
           id: 'dummy',
           //domainFn: (SensorModel dataPoint, _) => dataPoint.timeStamp,
-          domainFn: (SensorModel dataPoint, _) => dataPoint.index,
-          measureFn: (SensorModel dataPoint, _) => dataPoint.valueY,
+          domainFn: (SensorModel dataPoint, _) => dataPoint.index ?? 0,
+          measureFn: (SensorModel dataPoint, _) => dataPoint.valueY ?? 0,
           //return last x records from list
           data: returnData(),
         ),
@@ -174,8 +180,8 @@ class HomeController extends GetxController {
         charts.Series<SensorModel, int>(
           id: 'dummy',
           //domainFn: (SensorModel dataPoint, _) => dataPoint.timeStamp,
-          domainFn: (SensorModel dataPoint, _) => dataPoint.index,
-          measureFn: (SensorModel dataPoint, _) => dataPoint.valueZ,
+          domainFn: (SensorModel dataPoint, _) => dataPoint.index ?? 0,
+          measureFn: (SensorModel dataPoint, _) => dataPoint.valueZ ?? 0,
           //return last x records from list
           data: returnData(),
         ),
@@ -283,7 +289,7 @@ class HomeController extends GetxController {
     }
   }
 
-  void stateMan({commands command, modes mode}) {
+  void stateMan({commands command = commands.none, modes mode = modes.none}) {
     lastCommand = command;
     var prevState = currentState;
     var prevMode = currentMode;
@@ -336,7 +342,7 @@ class HomeController extends GetxController {
 
   // execute acions required when change of state.
   // [ 'Level', 'Timer', 'Auto'];
-  void stateExecute({bool modeChanged, bool stateChanged}) {
+  void stateExecute({bool modeChanged = false, bool stateChanged = false}) {
     if (stateChanged) {
       switch (currentState) {
         case states.stopped:
@@ -393,6 +399,7 @@ class HomeController extends GetxController {
           break;
         case states.persisting:
           //subscription.resume();
+          waiting = false;
           updateData = true;
           break;
         case states.viewing:
@@ -411,7 +418,7 @@ class HomeController extends GetxController {
       if (currentMode == modes.capture) {
         //mode changed to capture
         //deactivate mqqtt client
-        mqttMan.disconnect();
+        mqttMan?.disconnect();
         persistData = false;
       } else if (currentMode == modes.persist) {
         //mode changed to persist
@@ -422,21 +429,21 @@ class HomeController extends GetxController {
               'Sample rate above minimum threshold,'
                   'adjust the rate by long pressing Run control',
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.grey[700],
+              backgroundColor: Get.theme.backgroundColor, //Colors.grey[700],
               duration: Duration(seconds: 5));
           handleModePressed(); //force mode back
           return;
         }
 
         //activate mqtt client
-        if (mqttMan.initializeMQTTClient()) {
-          mqttMan.connect();
+        if (mqttMan?.initializeMQTTClient() ?? false) {
+          mqttMan?.connect();
           persistData = true;
         } else {
           Get.snackbar(
               'Error:', 'Mqtt initialisation failed - configure device',
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.grey[700],
+              backgroundColor: Get.theme.backgroundColor, //Colors.grey[700],
               duration: Duration(seconds: 5));
           handleModePressed(); //force mode back
           return;
@@ -449,7 +456,7 @@ class HomeController extends GetxController {
   final cmndsText = ['Run', 'Stop'];
   var _cmndText = 'Stop'.obs;
   String get cmndText => _cmndText.value;
-  set cmndText(val) {
+  set cmndText(String val) {
     _cmndText.value = val;
     update(['cmndButton']);
   }
@@ -475,10 +482,11 @@ class HomeController extends GetxController {
   bool doNotDisturb() {
     if (currentState == states.capturing ||
         currentState == states.persisting ||
-        currentState == states.waiting)
+        currentState == states.waiting) {
       return true;
-    else
+    } else {
       return false;
+    }
   }
 
   void handleTrigStartPressed() {
@@ -583,8 +591,8 @@ class HomeController extends GetxController {
     dynamic upperValue,
   ) {
     print('slider- lower: $lowerValue upper: $upperValue');
-    zoomMin = lowerValue;
-    zoomMax = upperValue;
+    zoomMin = lowerValue as double;
+    zoomMax = upperValue as double;
     update();
   }
 
@@ -593,18 +601,19 @@ class HomeController extends GetxController {
     String startStopText = 'start',
   }) async {
     if (trigText == triggerType[0]) {
-      var result = await Get.to(LevelTrigSetup(levelTrigData()));
+      Map<dynamic, dynamic> result =
+          await Get.to(LevelTrigSetup(levelTrigData()));
       print(result);
       setLevelTrigData(result);
     } else if (trigText == triggerType[1]) {
       if (startStopText == 'start') {
-        var result = await Get.to(TimingSetup(
+        Duration result = await Get.to(TimingSetup(
           duration: waitForDuration,
         ));
         print('result: $result');
         waitForDuration = result;
       } else {
-        var result = await Get.to(TimingSetup(
+        Duration result = await Get.to(TimingSetup(
           duration: runUntilDuration,
         ));
         print('result: $result');
@@ -629,7 +638,7 @@ class HomeController extends GetxController {
     mqttPubBuf.add(aModel);
     bool publishMessage = flush || mqttPubBuf.length >= mqttBufTrigLength;
     if (publishMessage) {
-      mqttMan.publish(SensorModelConvert.toJsonEncoded('1000', mqttPubBuf));
+      mqttMan?.publish(SensorModelConvert.toJsonEncoded('1000', mqttPubBuf));
       mqttPubBuf.clear();
     }
   }

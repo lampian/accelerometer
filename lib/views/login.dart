@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/utils/utils.dart';
 import 'package:accelerometer/views/signup.dart';
@@ -38,7 +39,9 @@ class Login extends GetWidget<AuthController> {
                   child: Text("Log In"),
                   onPressed: () async {
                     var retStr = await controller.login();
-                    if (retStr.isNotEmpty) snackBar('Warning', retStr);
+                    if (retStr.isNotEmpty) {
+                      snackBar('Warning', retStr);
+                    }
                   },
                 ),
                 FlatButton(

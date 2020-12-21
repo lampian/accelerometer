@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:accelerometer/models/mqtt_model.dart';
 import 'package:get_storage/get_storage.dart';
 

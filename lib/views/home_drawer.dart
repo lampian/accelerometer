@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/utils/root.dart';
 import 'package:accelerometer/views/mqtt_config.dart';
@@ -6,7 +7,7 @@ import 'package:get/get.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({
-    Key key,
+    @required Key key,
   }) : super(key: key);
 
   @override

@@ -1,4 +1,4 @@
-import 'package:accelerometer/widgets/value_slider.dart';
+// @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
@@ -13,12 +13,12 @@ class TimingSetupController extends GetxController {
 }
 
 class TimingSetup extends GetWidget<TimingSetupController> {
-  TimingSetup({Duration duration}) {
-    controller.days.value = duration.inDays;
-    controller.hrs.value = duration.inHours % 24;
-    controller.min.value = duration.inMinutes % 60;
-    controller.sec.value = duration.inSeconds % 60;
-    controller.msec.value = duration.inMilliseconds % 1000;
+  TimingSetup({@required Duration duration}) {
+    controller.days.value = duration?.inDays ?? 0;
+    controller.hrs.value = duration?.inHours ?? 0 % 24;
+    controller.min.value = duration?.inMinutes ?? 0 % 60;
+    controller.sec.value = duration?.inSeconds ?? 0 % 60;
+    controller.msec.value = duration?.inMilliseconds ?? 0 % 1000;
   }
   Widget build(BuildContext context) {
     return OrientationBuilder(
@@ -85,7 +85,8 @@ class TimingSetup extends GetWidget<TimingSetupController> {
         max: 31,
         val: controller.days.value.toDouble(),
         vertical: true,
-        callBack: (int, min, max) => {controller.days.value = min.toInt()});
+        callBack: (_, min, max) =>
+            {controller.days.value = (min as double).toInt()});
   }
 
   Container sliderGroupHours() {
@@ -95,7 +96,8 @@ class TimingSetup extends GetWidget<TimingSetupController> {
         max: 23,
         val: controller.hrs.value.toDouble(),
         vertical: true,
-        callBack: (int, min, max) => {controller.hrs.value = min.toInt()});
+        callBack: (_, min, max) =>
+            {controller.hrs.value = (min as double).toInt()});
   }
 
   Container sliderGroupMinutes() {
@@ -105,7 +107,8 @@ class TimingSetup extends GetWidget<TimingSetupController> {
         max: 59,
         val: controller.min.value.toDouble(),
         vertical: true,
-        callBack: (int, min, max) => {controller.min.value = min.toInt()});
+        callBack: (_, min, max) =>
+            {controller.min.value = (min as double).toInt()});
   }
 
   Container sliderGroupSeconds() {
@@ -115,7 +118,8 @@ class TimingSetup extends GetWidget<TimingSetupController> {
         max: 59,
         val: controller.sec.value.toDouble(),
         vertical: true,
-        callBack: (int, min, max) => {controller.sec.value = min.toInt()});
+        callBack: (_, min, max) =>
+            {controller.sec.value = (min as double).toInt()});
   }
 
   Container sliderGroupMiliseconds() {
@@ -125,17 +129,22 @@ class TimingSetup extends GetWidget<TimingSetupController> {
         max: 999,
         val: controller.msec.value.toDouble(),
         vertical: true,
-        callBack: (int, min, max) => {controller.msec.value = min.toInt()});
+        callBack: (_, min, max) =>
+            {controller.msec.value = (min as double).toInt()});
   }
 
+  dynamic _dummyCallBack(int aVal, dynamic aX, dynamic aY) {}
+
   Container sliderGroup({
-    String tooltipText,
-    double val,
-    double min,
-    double max,
-    bool vertical,
-    Function callBack,
+    String tooltipText = '',
+    @required double val,
+    @required double min,
+    @required double max,
+    bool vertical = false,
+    @required dynamic Function(int x, dynamic y, dynamic z) callBack,
   }) {
+    dynamic Function(int x, dynamic y, dynamic z) aFunc =
+        callBack ?? _dummyCallBack;
     return Container(
       height: Get.context.height,
       color: Colors.blue[100],
@@ -143,11 +152,12 @@ class TimingSetup extends GetWidget<TimingSetupController> {
         rtl: true,
         centeredOrigin: false,
         rangeSlider: false,
-        values: [val],
-        max: max,
-        min: min,
+        values: [val ?? 0],
+        max: max ?? 1,
+        min: min ?? 0,
         axis: vertical ? Axis.vertical : Axis.horizontal,
-        onDragCompleted: callBack,
+        //onDragCompleted: callBack == null ? () {} : callBack(),
+        onDragCompleted: aFunc,
         trackBar: FlutterSliderTrackBar(
           activeTrackBarHeight: 6,
         ),
@@ -182,7 +192,7 @@ class TimingSetup extends GetWidget<TimingSetupController> {
           shadowColor: Colors.grey[700],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
-            side: BorderSide(color: Colors.grey[600]),
+            side: BorderSide(color: Get.theme.accentColor), //Colors.grey[600]),
           ),
         ),
       ),

@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:accelerometer/widgets/value_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class LevelTrigController extends GetxController {
     dynamic upperValue,
   ) {
     print('slider- lower: $lowerValue upper: $upperValue');
-    startTrigLevel.value = lowerValue;
+    startTrigLevel.value = lowerValue as double;
     //zoomMax = upperValue;
     //update();
   }
@@ -31,7 +32,7 @@ class LevelTrigController extends GetxController {
     dynamic upperValue,
   ) {
     print('slider- lower: $lowerValue upper: $upperValue');
-    endTrigLevel.value = lowerValue;
+    endTrigLevel.value = lowerValue as double;
     //zoomMax = upperValue;
     //update();
   }
@@ -59,11 +60,11 @@ class LevelTrigController extends GetxController {
 
 class LevelTrigSetup extends GetWidget<LevelTrigController> {
   LevelTrigSetup(Map<dynamic, dynamic> map) {
-    controller.startTrigLevel.value = map['startLevel'];
-    controller.startTrigIsPosEdge.value = !map['startPosEdge'];
+    controller.startTrigLevel.value = map['startLevel'] as double;
+    controller.startTrigIsPosEdge.value = !(map['startPosEdge'] as bool);
     controller.startEdgeTextCallback();
-    controller.endTrigLevel.value = map['stopLevel'];
-    controller.endTrigIsPosEdge.value = !map['stopPosEdge'];
+    controller.endTrigLevel.value = map['stopLevel'] as double;
+    controller.endTrigIsPosEdge.value = !(map['stopPosEdge'] as bool);
     controller.endEdgeTextCallback();
   }
 
@@ -132,7 +133,8 @@ class LevelTrigSetup extends GetWidget<LevelTrigController> {
               shadowColor: Colors.grey[700],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.0),
-                side: BorderSide(color: Colors.grey[600]),
+                side: BorderSide(
+                    color: Get.theme.accentColor), //Colors.grey[600]),
               ),
             ),
           ),
@@ -201,7 +203,7 @@ class LevelTrigSetup extends GetWidget<LevelTrigController> {
           shadowColor: Colors.grey[700],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
-            side: BorderSide(color: Colors.grey[600]),
+            side: BorderSide(color: Get.theme.accentColor), //Colors.grey[600]),
           ),
         ),
       ),
@@ -267,7 +269,7 @@ class LevelTrigSetup extends GetWidget<LevelTrigController> {
           shadowColor: Colors.grey[700],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
-            side: BorderSide(color: Colors.grey[600]),
+            side: BorderSide(color: Get.theme.accentColor), //Colors.grey[600]),
           ),
         ),
       ),

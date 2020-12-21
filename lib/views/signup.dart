@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -47,10 +48,11 @@ class SignUp extends GetWidget<AuthController> {
                   child: Text("Sign Up"),
                   onPressed: () async {
                     var retStr = await controller.createUser();
-                    if (retStr.isNotEmpty)
+                    if (retStr.isNotEmpty) {
                       snackBar('Warning', retStr);
-                    else
+                    } else {
                       Get.back();
+                    }
                   },
                 )
               ],

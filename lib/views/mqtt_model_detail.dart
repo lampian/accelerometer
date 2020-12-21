@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:accelerometer/controllers/mqtt_model_detail_controller.dart';
 import 'package:accelerometer/models/mqtt_model.dart';
 import 'package:flutter/material.dart';
@@ -126,25 +127,27 @@ class MqttModelDetail extends GetWidget<MqttModelDetailController> {
             FlutterSwitch(
               value: value,
               onToggle: (val) => func(val),
-              activeColor: Colors.blueGrey[700],
-              inactiveColor: Colors.blueGrey[700],
+              activeColor: Get.theme.accentColor, //Colors.blueGrey[700],
+              inactiveColor: Get.theme.accentColor, //Colors.blueGrey[700],
             ),
           ],
         ),
       ),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[700], width: 1),
+        border: Border.all(
+            color: Get.theme.accentColor), //Colors.grey[700], width: 1),
         borderRadius: BorderRadius.circular(16),
         color: Colors.grey[800],
       ),
     );
   }
 
-  Widget textBox(
-      {TextEditingController ctl,
-      String lbl = '',
-      String hnt = 'enter a string',
-      bool enable = false}) {
+  Widget textBox({
+    TextEditingController ctl,
+    String lbl = '',
+    String hnt = 'enter a string',
+    bool enable = false,
+  }) {
     return TextField(
       controller: ctl,
       keyboardType: TextInputType.emailAddress,
@@ -197,7 +200,7 @@ class MqttModelDetail extends GetWidget<MqttModelDetailController> {
           shadowColor: Colors.grey[700],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
-            side: BorderSide(color: Colors.grey[700]),
+            side: BorderSide(color: Get.theme.accentColor), //Colors.grey[700]),
           ),
         ),
       ),
@@ -229,7 +232,7 @@ class MqttModelDetail extends GetWidget<MqttModelDetailController> {
           shadowColor: Colors.grey[700],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
-            side: BorderSide(color: Colors.grey[700]),
+            side: BorderSide(color: Get.theme.accentColor), //Colors.grey[700]),
           ),
         ),
       ),

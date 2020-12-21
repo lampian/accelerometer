@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'dart:async';
 
 import 'package:accelerometer/models/mqtt_model.dart';
@@ -9,7 +10,7 @@ class Database {
 
   Future<bool> createNewUser(UserModel user) async {
     try {
-      await _firestore.collection("users").doc(user.id).set({
+      await _firestore.collection("users").doc(user.id ?? '').set({
         "name": user.name,
         "email": user.email,
         "admin": user.admin,
@@ -49,7 +50,7 @@ class Database {
         //.orderBy("name", descending: false)
         .snapshots()
         .map((QuerySnapshot query) {
-      List<UserModel> retVal = List();
+      List<UserModel> retVal = [];
       query.docs.forEach((element) {
         retVal.add(UserModel.fromDocumentSnapshot(documentSnapshot: element));
       });
@@ -186,7 +187,7 @@ class Database {
         //.orderBy("name", descending: false)
         .snapshots()
         .map((QuerySnapshot query) {
-      List<MqttModel> retVal = List();
+      List<MqttModel> retVal = [];
       query.docs.forEach((element) {
         retVal.add(MqttModel.fromDocumentSnapshot(documentSnapshot: element));
       });
@@ -198,7 +199,7 @@ class Database {
   Future<void> addMqttToUser(String uid, MqttModel mqtt) async {
     try {
       //if true, add room id to users rooms collection
-      _firestore
+      await _firestore
           .collection("users")
           .doc(uid)
           .collection("mqtt")

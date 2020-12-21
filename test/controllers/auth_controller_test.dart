@@ -1,5 +1,5 @@
+// @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
-import 'package:accelerometer/models/user.dart';
 import 'package:accelerometer/services/database.dart';
 //import 'package:cloud_firestore_mocks/cloud_firestore_mocks.dart';
 //import 'package:firebase/firebase.dart';
@@ -56,7 +56,7 @@ void main() {
     setUpAll(() async {
       binding = BindingsBuilder(() {
         Get.put<AuthController>(
-          AuthController(auth: auth, dataBase: dataBase),
+          AuthController(),
           permanent: false,
         );
       });

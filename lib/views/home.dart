@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:accelerometer/controllers/home_controller.dart';
 import 'package:accelerometer/utils/sensor_chart.dart';
 import 'package:accelerometer/widgets/app_slider.dart';
@@ -17,7 +18,7 @@ class Home extends GetWidget<HomeController> {
             title: Text('title'),
             actions: [],
           ),
-          drawer: HomeDrawer(),
+          drawer: HomeDrawer(key: Get.key),
           body: handleOrientation(),
         );
       },
@@ -223,7 +224,8 @@ class Home extends GetWidget<HomeController> {
           shadowColor: Colors.grey[700],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
-            side: BorderSide(color: Colors.grey[600]),
+            side:
+                BorderSide(color: Get.theme.accentColor), //  Colors.grey[600]),
           ),
         ),
       ),
@@ -247,7 +249,7 @@ class Home extends GetWidget<HomeController> {
         shadowColor: Colors.grey[700],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
-          side: BorderSide(color: Colors.grey[600]),
+          side: BorderSide(color: Get.theme.accentColor), //.grey[600]),
         ),
       ),
     );
@@ -270,7 +272,7 @@ class Home extends GetWidget<HomeController> {
         shadowColor: Colors.grey[700],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
-          side: BorderSide(color: Colors.grey[600]),
+          side: BorderSide(color: Get.theme.accentColor), //Colors.grey[600]),
         ),
       ),
     );
@@ -286,7 +288,7 @@ class Home extends GetWidget<HomeController> {
         shadowColor: Colors.grey[700],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
-          side: BorderSide(color: Colors.grey[600]),
+          side: BorderSide(color: Get.theme.accentColor), //Colors.grey[600]),
         ),
       ),
     );

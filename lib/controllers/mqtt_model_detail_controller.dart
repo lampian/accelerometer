@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/models/mqtt_model.dart';
 import 'package:flutter/widgets.dart';
@@ -6,58 +7,58 @@ import 'package:accelerometer/services/database.dart';
 
 class MqttModelDetailController extends GetxController {
   TextEditingController idTEC;
-  get id => this.idTEC.text;
-  set id(String value) => this.idTEC.text = value;
+  String get id => this.idTEC?.text ?? '';
+  set id(String value) => this.idTEC?.text = value;
 
   TextEditingController hostTEC;
-  get host => this.hostTEC.text;
-  set host(String value) => this.hostTEC.text = value;
+  String get host => this.hostTEC?.text ?? '';
+  set host(String value) => this.hostTEC?.text = value;
 
   TextEditingController portTEC;
-  get port => this.portTEC.text;
-  set port(String value) => this.portTEC.text = value;
+  String get port => this.portTEC?.text ?? '';
+  set port(String value) => this.portTEC?.text = value;
 
   TextEditingController identifierTEC;
-  get identifier => this.identifierTEC.text;
-  set identifier(String value) => this.identifierTEC.text = value;
+  String get identifier => this.identifierTEC?.text ?? '';
+  set identifier(String value) => this.identifierTEC?.text = value;
 
   TextEditingController keepAliveTEC;
-  get keepAlive => this.keepAliveTEC.text;
-  set keepAlive(String value) => this.keepAliveTEC.text = value;
+  String get keepAlive => this.keepAliveTEC?.text ?? '';
+  set keepAlive(String value) => this.keepAliveTEC?.text = value;
 
   TextEditingController qosTEC;
-  get qos => this.qosTEC.text;
-  set qos(String value) => this.qosTEC.text = value;
+  String get qos => this.qosTEC?.text ?? '';
+  set qos(String value) => this.qosTEC?.text = value;
 
   TextEditingController topicTEC;
-  get topic => this.topicTEC.text;
-  set topic(String value) => this.topicTEC.text = value;
+  String get topic => this.topicTEC?.text ?? '';
+  set topic(String value) => this.topicTEC?.text = value;
 
   var _secure = false.obs;
-  get secure => this._secure.value;
-  set secure(value) => this._secure.value = value;
+  bool get secure => this._secure.value;
+  set secure(bool value) => this._secure.value = value;
 
   var _canSave = false.obs;
-  get canSave => this._canSave.value;
-  set canSave(value) => this._canSave.value = value;
+  bool get canSave => this._canSave.value;
+  set canSave(bool value) => this._canSave.value = value;
 
-  String _title;
-  get title => this._title;
-  set title(value) => this._title = value;
+  String _title = '';
+  String get title => this._title;
+  set title(String value) => this._title = value;
 
   var _isPub = false.obs;
   bool get isPub => _isPub.value;
-  set isPub(value) => _isPub.value = value;
+  set isPub(bool value) => _isPub.value = value;
   void isPubChanged(bool val) {
     if (!readOnly) isPub = val;
     update();
   }
 
-  String willTopic;
-  String willMessage;
+  String willTopic = '';
+  String willMessage = '';
 
-  bool logging;
-  bool readOnly;
+  bool logging = false;
+  bool readOnly = false;
 
   @override
   void onInit() {
@@ -100,14 +101,14 @@ class MqttModelDetailController extends GetxController {
 
   bool validateMqttData() {
     if (readOnly) return false;
-    if (idTEC.value.isNullOrBlank) return false;
-    if (identifierTEC.value.isNullOrBlank) return false;
-    if (hostTEC.value.isNullOrBlank) return false;
-    if (topicTEC.value.isNullOrBlank) return false;
-    port = portTEC.value.isNullOrBlank ? "443" : port;
-    keepAlive = keepAliveTEC.value.isNullOrBlank ? "60" : keepAlive;
-    qos = qosTEC.value.isNullOrBlank ? "0" : qos;
-    isPub = isPub.isNullOrBlank ? 'true' : isPub;
+    if (idTEC?.value?.isNullOrBlank ?? true) return false;
+    if (identifierTEC?.value?.isNullOrBlank ?? true) return false;
+    if (hostTEC?.value?.isNullOrBlank ?? true) return false;
+    if (topicTEC?.value?.isNullOrBlank ?? true) return false;
+    port = portTEC?.value?.isNullOrBlank ?? true ? '100' : port;
+    keepAlive = keepAliveTEC?.value?.isNullOrBlank ?? true ? '10' : keepAlive;
+    qos = qosTEC?.value?.isNullOrBlank ?? true ? '3' : qos;
+    isPub = isPub.isNullOrBlank ? true : isPub;
     secure = _secure.isNullOrBlank ? true : secure;
     logging = logging.isNullOrBlank ? false : logging;
     willTopic = '';

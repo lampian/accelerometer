@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'dart:async';
 import 'dart:math';
 
@@ -13,7 +14,7 @@ class Sensor {
 
   Stream<AccelerometerEvent> timedCounter({Duration samplePeriod}) {
     var streamController = StreamController<AccelerometerEvent>();
-    Timer timer;
+    Timer timer = Timer(Duration(seconds: 1), () {});
 
     // timer fires at period samplePeriod which should be longer
     // than sample rate of accelerometer, leaving samples in cash
@@ -43,18 +44,18 @@ class Sensor {
     }
 
     void startTimer() {
-      timer = Timer.periodic(samplePeriod, tick);
+      timer = Timer.periodic(samplePeriod ?? Duration(seconds: 1), tick);
     }
 
     void resumeTimer() {
-      timer = Timer.periodic(samplePeriod, tick);
+      timer = Timer.periodic(samplePeriod ?? Duration(seconds: 1), tick);
     }
 
     void stopTimer() {
-      if (timer != null) {
-        timer.cancel();
-        timer = null;
-      }
+      //if (timer != null) {
+      timer.cancel();
+      //timer = null;
+      //}
       streamController.close();
     }
 
@@ -80,7 +81,7 @@ class Sensor {
 
   void startStream({int samplePeriod}) {
     sensorStream = timedCounter(
-      samplePeriod: Duration(milliseconds: samplePeriod),
+      samplePeriod: Duration(milliseconds: samplePeriod ?? 100),
     );
     listenToEvents();
   }

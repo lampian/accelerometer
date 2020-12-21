@@ -1,5 +1,5 @@
+// @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
-import 'package:accelerometer/controllers/bindings/authBinding.dart';
 import 'package:accelerometer/services/database.dart';
 import 'package:accelerometer/views/login.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
@@ -15,7 +15,7 @@ void main() {
   BindingsBuilder binding;
   final auth = MockFirebaseAuth();
   final dataBase = MockDatabase();
-  Widget makeTestableWidget({Widget child}) {
+  Widget makeTestableWidget({@required Widget child}) {
     return GetMaterialApp(
       initialBinding: binding,
       home: child,
@@ -25,7 +25,7 @@ void main() {
   setUpAll(() async {
     binding = BindingsBuilder(() {
       Get.put<AuthController>(
-        AuthController(auth: auth, dataBase: dataBase),
+        AuthController(),
         permanent: false,
       );
     });

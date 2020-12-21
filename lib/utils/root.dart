@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/controllers/home_controller.dart';
 import 'package:accelerometer/controllers/mqtt_config_controller.dart';
@@ -18,10 +19,12 @@ class Root extends GetWidget<AuthController> {
       builder: (_) {
         print('ims: root');
         var aUser = controller.user;
-        if (aUser == null) return Login();
+        if (aUser?.email == '') {
+          return Login();
+        }
 
-        print('ims: root user- ${aUser.email}');
-        if (controller.user?.uid != null) {
+        print('ims: root user- ${aUser?.email}');
+        if (controller.user.uid != null) {
           Get.put<MqttManager>(MqttManager());
           Get.put<HomeController>(HomeController());
           Get.put<LevelTrigController>(LevelTrigController());

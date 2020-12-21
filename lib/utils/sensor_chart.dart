@@ -1,14 +1,20 @@
+// @dart=2.9
 import 'package:accelerometer/models/sensor_model.dart';
 import 'package:charts_flutter/flutter.dart';
 import 'package:flutter/material.dart';
 
 class SensorChart extends StatelessWidget {
   //SensorChart({Key key}) : super(key: key) {}
-  SensorChart({this.data, this.x1, this.x2, this.title});
+  SensorChart({
+    @required this.data,
+    @required this.x1,
+    @required this.x2,
+    @required this.title,
+  });
   final List<Series<SensorModel, int>> data;
-  final int x1;
-  final int x2;
-  final String title;
+  int x1 = 0;
+  int x2 = 1;
+  String title = '';
   @override
   Widget build(BuildContext context) {
     return chart();
@@ -16,7 +22,7 @@ class SensorChart extends StatelessWidget {
 
   LineChart chart() {
     LineChart aTSC = LineChart(
-      data, //homeController.getSeriesList(),
+      data ?? [], //homeController.getSeriesList(),
       animate: false,
       behaviors: [
         // ChartTitle(
@@ -24,7 +30,7 @@ class SensorChart extends StatelessWidget {
         //   titleStyleSpec: TextStyleSpec(color: Color.white),
         // ),
         ChartTitle(
-          title, //controller.chs[index].toString(),
+          title ?? '', //controller.chs[index].toString(),
           behaviorPosition: BehaviorPosition.start,
           titleStyleSpec: TextStyleSpec(color: Color.white),
         ),
@@ -52,8 +58,8 @@ class SensorChart extends StatelessWidget {
       // ),
       domainAxis: NumericAxisSpec(
         viewport: NumericExtents(
-          x1, //homeController.dmnViewPortX1,
-          x2, //homeController.dmnViewPortX2,
+          x1 ?? 1, //homeController.dmnViewPortX1,
+          x2 ?? 40, //homeController.dmnViewPortX2,
         ),
       ),
       primaryMeasureAxis: NumericAxisSpec(

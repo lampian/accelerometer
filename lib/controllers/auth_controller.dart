@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:accelerometer/controllers/user_controller.dart';
 import 'package:accelerometer/models/user.dart';
 import 'package:accelerometer/services/database.dart';
@@ -9,43 +10,45 @@ import 'package:get/get.dart';
 class Validate {
   static bool email(String value) => value.isEmail;
   static bool password(String value) {
-    if (value.isEmpty || value.isNullOrBlank)
+    if (value.isEmpty || value.isNullOrBlank) {
       return false;
-    else
+    } else {
       return true;
+    }
   }
 
   static bool userName(String value) {
-    if (value.isEmpty || value.isNullOrBlank)
+    if (value.isEmpty || value.isNullOrBlank) {
       return false;
-    else
+    } else {
       return true;
+    }
   }
 }
 
 class AuthController extends GetxController {
-  AuthController({this.auth, this.dataBase});
-  FirebaseAuth auth;
-  Database dataBase;
+  //AuthController({this.auth, this.dataBase});
+  FirebaseAuth auth = FirebaseAuth.instance;
+  Database dataBase = Database();
   Rx<User> _firebaseUser = Rx<User>();
 
   User get user => _firebaseUser.value;
   User get currentUser {
-    var x = auth.currentUser;
+    User x = auth.currentUser;
     print('current user email: ${x.email}');
     return x;
   }
 
   var nameTextCntl = TextEditingController();
-  get nameText => this.nameTextCntl.text;
+  String get nameText => this.nameTextCntl.text;
   set nameText(String value) => this.nameTextCntl.text = value;
 
   var emailTextCntl = TextEditingController();
-  get emailText => this.emailTextCntl.text;
+  String get emailText => this.emailTextCntl.text;
   set emailText(String value) => this.emailTextCntl.text = value;
 
   var passwordTextCntl = TextEditingController();
-  get passwordText => this.passwordTextCntl.text;
+  String get passwordText => this.passwordTextCntl.text;
   set passwordText(String value) => this.passwordTextCntl.text = value;
 
   @override
@@ -81,8 +84,8 @@ class AuthController extends GetxController {
       } else if (e.code == 'email-already-in-use') {
         return ('The account already exists for that email.');
       }
-    } catch (e) {
-      return e.message;
+    } on Exception catch (_) {
+      return 'app: unknown exception occured';
     }
     return '';
   }
@@ -106,8 +109,8 @@ class AuthController extends GetxController {
       } else if (e.code == 'unknown') {
         return e.message;
       }
-    } catch (e) {
-      return e.message;
+    } catch (_) {
+      return 'app: unknown exception occured';
     }
     return '';
   }
@@ -119,7 +122,7 @@ class AuthController extends GetxController {
       Get.find<UserController>().userModel =
           await Database().getUser(_aR.user.uid);
     } catch (e) {
-      snackBar("Error signing in", e.message);
+      snackBar('Error', 'Error signing in');
     }
   }
 
@@ -128,7 +131,7 @@ class AuthController extends GetxController {
       await auth.signOut();
       Get.find<UserController>().clear();
     } catch (e) {
-      snackBar("Error signing out", e.message);
+      snackBar('Error', 'Error signing out');
     }
   }
 }

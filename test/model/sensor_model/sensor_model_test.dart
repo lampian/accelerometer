@@ -1,6 +1,7 @@
+// @dart=2.9
 import 'package:accelerometer/models/sensor_model.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get/get.dart';
+//import 'package:get/get.dart';
 
 // class WeakPasswordException extends FirebaseAuthException {
 //   @override
@@ -10,7 +11,7 @@ import 'package:get/get.dart';
 //class MockDatabase extends Mock implements Database {}
 
 void main() {
-  BindingsBuilder binding;
+  //BindingsBuilder binding;
 
   //group('json', () {
   // setUpAll(() async {
@@ -33,6 +34,7 @@ void main() {
         valueX: 2,
         valueY: -3,
         valueZ: 4,
+        index: 0,
       );
       double x = model.rms();
       expect(model.channel, 1);
@@ -44,12 +46,12 @@ void main() {
     });
     test('mms2rms ', () {
       var model = SensorModel(
-        channel: 1,
-        timeStamp: DateTime(2020, 12, 1, 12, 30, 20, 123),
-        valueX: 2,
-        valueY: -3,
-        valueZ: 4,
-      );
+          channel: 1,
+          timeStamp: DateTime(2020, 12, 1, 12, 30, 20, 123),
+          valueX: 2,
+          valueY: -3,
+          valueZ: 4,
+          index: 0);
       int x = model.mms2rms();
       expect(model.channel, 1);
       expect(model.timeStamp, DateTime(2020, 12, 1, 12, 30, 20, 123));
@@ -67,12 +69,12 @@ void main() {
       };
 
       var model = SensorModel(
-        channel: 1,
-        timeStamp: DateTime(2020, 12, 1, 12, 30, 20, 123),
-        valueX: 2,
-        valueY: -3,
-        valueZ: 4,
-      );
+          channel: 1,
+          timeStamp: DateTime(2020, 12, 1, 12, 30, 20, 123),
+          valueX: 2,
+          valueY: -3,
+          valueZ: 4,
+          index: 0);
       Map<String, dynamic> x = model.toJsonMap('123456');
       expect(x, refValue);
     });
@@ -83,8 +85,11 @@ void main() {
         valueX: 2,
         valueY: -3,
         valueZ: 4,
+        index: 0,
       );
-      var x = model.toJsonEncoded('123456');
+      var aList = <SensorModel>[];
+      aList.add(model);
+      var x = SensorModelConvert.toJsonEncoded('123456', aList);
       var refStr =
           'eyJ0IjoxNjA2ODE4NjIwMTIzLCJkIjoxMjM0NTYsImMiOjEsInYiOjUzODV9';
       expect(x, refStr);

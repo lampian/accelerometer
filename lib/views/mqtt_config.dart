@@ -1,13 +1,12 @@
+// @dart=2.9
 import 'package:accelerometer/controllers/mqtt_config_controller.dart';
 import 'package:accelerometer/models/mqtt_model.dart';
 import 'package:accelerometer/models/sensor_model.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/utils/storage.dart';
-import 'package:accelerometer/views/mqtt_model_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_guid/flutter_guid.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 
 class MqttConfig extends GetWidget<MqttConfigController> {
   @override
@@ -79,7 +78,7 @@ class MqttConfig extends GetWidget<MqttConfigController> {
   }
 
   IconData getIcon() {
-    var icon;
+    IconData icon;
     switch (controller.mode) {
       case Mode.create:
         icon = Icons.add;
@@ -112,7 +111,7 @@ class MqttConfig extends GetWidget<MqttConfigController> {
     return Visibility(
       visible: controller.mode == Mode.create ? true : false,
       child: FloatingActionButton(
-        onPressed: () => handleItemOnTap(null), //create new model
+        onPressed: () => handleItemOnTap(MqttModel.emptyModel()),
         child: Icon(
           Icons.add,
           color: Colors.white,
@@ -123,9 +122,7 @@ class MqttConfig extends GetWidget<MqttConfigController> {
   }
 
   Widget listGroup() {
-    if (controller.mqttList == null) {
-      return Text('loading..');
-    } else if (controller.mqttList.isEmpty) {
+    if (controller.mqttList.isEmpty) {
       return Text('Nothing to show');
     } else {
       return GetX<MqttConfigController>(
@@ -209,7 +206,7 @@ class MqttConfig extends GetWidget<MqttConfigController> {
         Storage.storeMqttModel(aMqttModel);
         Get.snackbar('Confirmation:', 'Mqtt information stored locally',
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.grey[700],
+            backgroundColor: Get.theme.accentColor, //Colors.grey[700],
             duration: Duration(seconds: 5));
         break;
       case Mode.test:
@@ -222,6 +219,7 @@ class MqttConfig extends GetWidget<MqttConfigController> {
             valueX: 2,
             valueY: -3,
             valueZ: 4,
+            index: 0,
           );
           var aList = <SensorModel>[];
           aList.add(model);
@@ -234,14 +232,14 @@ class MqttConfig extends GetWidget<MqttConfigController> {
                 'Test complete.'
                     '\nMqtt initialised, message published and connection closed',
                 snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.grey[700],
+                backgroundColor: Get.theme.accentColor, //Colors.grey[700],
                 duration: Duration(seconds: 8));
           }
         } else {
           Get.snackbar(
               'Error:', 'Mqtt initialisation failed - configure device',
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.grey[700],
+              backgroundColor: Get.theme.accentColor, //Colors.grey[700],
               duration: Duration(seconds: 5));
         }
         break;

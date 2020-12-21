@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'dart:async';
 
 import 'package:accelerometer/models/mqtt_model.dart';
@@ -16,28 +17,28 @@ class MqttConfigController extends GetxController {
   List<MqttModel> get mqttList => _mqttList.value;
 
   final _title = 'title'.obs;
-  get title => this._title.value;
-  set title(value) => this._title.value = value;
+  String get title => this._title.value;
+  set title(String value) => this._title.value = value;
 
   final _mode = Mode.read.obs;
-  get mode => this._mode.value;
-  set mode(value) => this._mode.value = value;
+  Mode get mode => this._mode.value;
+  set mode(Mode value) => this._mode.value = value;
 
   User _user;
   User get user => _user;
   set user(value) => this._user;
 
-  MqttManager mqttManager;
+  MqttManager mqttManager = MqttManager();
 
   @override
   Future<void> onInit() async {
     super.onInit();
     _user = Get.find<AuthController>().currentUser;
-    if (user == null) {
-      print('mqtt config controller user is null during init');
+    if (user?.email == '') {
+      print('mqtt config controller user is empty during init');
       return;
     }
-    _mqttList.bindStream(Database().userMqttStream(user.uid));
+    _mqttList.bindStream(Database().userMqttStream(user?.uid ?? ''));
   }
 
   void handleMode() {
