@@ -61,7 +61,7 @@ class MqttManager extends GetxController {
     try {
       rsaFile = await getRsaFilePath(privateKey); //rsaPrivateKey);
     } catch (e) {
-      print('mqtt manager - onInit : $e');
+      print('app: mqtt manager - onInit : $e');
       onInitFailure = true;
     }
 
@@ -71,7 +71,7 @@ class MqttManager extends GetxController {
   bool initializeMQTTClient() {
     mqttModel = Storage.retrieveMqttModel();
     if (mqttModel.id == '' || mqttModel.host == '') {
-      print('GetStorage returned a empty or null instance');
+      print('app: GetStorage returned a empty or null instance');
       return false;
     } else if (onInitFailure) {
       return false;
@@ -151,7 +151,7 @@ class MqttManager extends GetxController {
         //.withWillMessage('') //controller.mqttModel.willMessage)
         .startClean() // Non persistent session for testing
         .withWillQos(MqttQos.atMostOnce); //  MqttQos.atLeastOnce);
-    print('ims: client connecting....');
+    print('app: client connecting....');
     _client.connectionMessage = connMess;
     return true;
   }
@@ -163,29 +163,29 @@ class MqttManager extends GetxController {
       await _client.connect(username, password);
     } on NoConnectionException catch (e) {
       // Raised by the client when connection fails.
-      print('EXAMPLE::client exception - $e');
+      print('app: client exception - $e');
       _client.disconnect();
     } on SocketException catch (e) {
       // Raised by the socket layer
-      print('EXAMPLE::socket exception - $e');
+      print('app: socket exception - $e');
       _client.disconnect();
     }
 
     if (_client.connectionStatus.state == MqttConnectionState.connected) {
       appConnectionState = MqttConnectState.connected;
-      print('iotcore client connected -----------------------');
+      print('app: iotcore client connected -----------------------');
     } else {
-      print('ERROR iotcore client connection failed - disconnecting,' +
+      print('app: ERROR iotcore client connection failed - disconnecting,' +
           ' state is ${_client.connectionStatus.state}');
       _client.disconnect();
     }
   }
 
   void disconnect() {
-    print('Disconnected');
+    print('app: Disconnected');
 
     var conState = _client.connectionStatus.returnCode;
-    print(conState);
+    print('app: $conState');
     if (conState != MqttConnectReturnCode.connectionAccepted) {
       return;
     }
@@ -207,11 +207,11 @@ class MqttManager extends GetxController {
 
   /// The subscribed callback
   void onSubscribed(String topic) {
-    print('ims: Subscription confirmed for topic $topic');
+    print('app: Subscription confirmed for topic $topic');
   }
 
   void onSubscribedFailed(String topic) {
-    print('ims: Subscription failed call back $topic');
+    print('app: Subscription failed call back $topic');
   }
 
   /// The unsolicited disconnect callback
@@ -224,24 +224,24 @@ class MqttManager extends GetxController {
   /// just set a flag to say disconnection has occurred and use a
   /// timed watchdog task to perform the reconnection.
   void onDisconnected() {
-    print('ims: OnDisconnected client callback - Client disconnection');
+    print('app: OnDisconnected client callback - Client disconnection');
     if (_client.connectionStatus.returnCode ==
         MqttConnectReturnCode.noneSpecified) {
-      print('ims: OnDisconnected callback is solicited, this is correct');
+      print('app: OnDisconnected callback is solicited, this is correct');
     }
     appConnectionState = MqttConnectState.disconnected;
   }
 
   /// The successful connect callback
   void onConnected() {
-    print('ims: OnConnected callback');
+    print('app: OnConnected callback');
 
     appConnectionState = MqttConnectState.connected;
-    print('ims: client connected....');
+    print('app: client connected....');
 
     //TODO subscribe as a seperate action
     //_client.subscribe(mqttModel.topic, MqttQos.atMostOnce);
-    //print('ims: subscribe to - ${mqttModel.topic}');
+    //print('app: subscribe to - ${mqttModel.topic}');
 
     /// The client has a change notifier object(see the Observable class)
     /// which we then listen to to get notifications of published updates
@@ -256,9 +256,8 @@ class MqttManager extends GetxController {
       lastRxMsg = pt;
       lastRxTopic = mqttModel.topic;
       //_currentState.setReceivedText(pt);
-      print('ims: Change notification:: topic is <${c[0].topic}>,'
+      print('app: Change notification:: topic is <${c[0].topic}>,'
           ' payload is <-- $pt -->');
-      print('');
     });
   }
 
@@ -270,9 +269,9 @@ class MqttManager extends GetxController {
     } else {
       appConnectionState = MqttConnectState.disconnected;
     }
-    print('ims: $status');
-    print(
-        'ims: onAutoReconnect client callback - Client auto reconnection sequence will start');
+    print('app: $status');
+    print('app: onAutoReconnect client callback'
+        ' - Client auto reconnection sequence will start');
   }
 
   /// The post auto re connect callback
@@ -284,17 +283,17 @@ class MqttManager extends GetxController {
       appConnectionState = MqttConnectState.disconnected;
     }
     // = MqttConnectReturnCode.values;
-    print('ims: $status');
-    print('ims: onAutoReconnected client callback -'
+    print('app: $status');
+    print('app: onAutoReconnected client callback -'
         ' Client auto reconnection sequence has completed');
   }
 
   void onUnsubscribed(String str) {
-    print('ims: onUnsubscribed client callback $str');
+    print('app: onUnsubscribed client callback $str');
   }
 
   void pong() {
-    print('ims: Ping response client callback invoked');
+    print('app: Ping response client callback invoked');
   }
 
   Future<bool> isConnectedAsync() async {

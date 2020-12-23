@@ -3,6 +3,7 @@ import 'package:accelerometer/controllers/home_controller.dart';
 import 'package:accelerometer/utils/sensor_chart.dart';
 import 'package:accelerometer/widgets/app_slider.dart';
 import 'package:accelerometer/views/home_drawer.dart';
+import 'package:accelerometer/widgets/button_general.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -18,7 +19,7 @@ class Home extends GetWidget<HomeController> {
             title: Text('title'),
             actions: [],
           ),
-          drawer: HomeDrawer(key: Get.key),
+          drawer: HomeDrawer(key: GlobalKey()),
           body: handleOrientation(),
         );
       },
@@ -79,7 +80,7 @@ class Home extends GetWidget<HomeController> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(0, 25, 0, 25),
             child: Container(
-              color: Colors.indigo[200],
+              color: Colors.transparent,
               child: AppSlider(
                 vertical: true,
                 callBack: controller.sliderCallBack,
@@ -90,7 +91,7 @@ class Home extends GetWidget<HomeController> {
         Expanded(
           flex: 2,
           child: Container(
-            color: Colors.lime,
+            color: Colors.transparent,
             child: landscapeControlGroup(),
           ),
         ), //,
@@ -129,9 +130,13 @@ class Home extends GetWidget<HomeController> {
             padding: const EdgeInsets.fromLTRB(25, 0, 25, 0),
             child: Container(
               color: Colors.transparent,
-              child: AppSlider(
-                vertical: false,
-                callBack: controller.sliderCallBack,
+              child: GetX<HomeController>(
+                builder: (_) => _.showInfo
+                    ? infoGroup()
+                    : AppSlider(
+                        vertical: false,
+                        callBack: _.sliderCallBack,
+                      ),
               ),
             ),
           ),
@@ -146,9 +151,20 @@ class Home extends GetWidget<HomeController> {
     );
   }
 
+  Widget infoGroup() {
+    return Container(
+      color: Colors.transparent,
+      child: Center(
+          child: Text(
+        controller.info,
+        style: TextStyle(color: Get.theme.indicatorColor, fontSize: 18),
+      )),
+    );
+  }
+
   Widget xGroup() {
     return GetBuilder<HomeController>(builder: (value) {
-      print('appChart(0) returned');
+      print('app: appChart(0) returned');
       return SensorChart(
         data: controller.getSeriesList('x'),
         x1: controller.dmnViewPortX1,
@@ -160,7 +176,7 @@ class Home extends GetWidget<HomeController> {
 
   Widget yGroup() {
     return GetBuilder<HomeController>(builder: (value) {
-      print('appChart(0) returned');
+      print('app: appChart(0) returned');
       return SensorChart(
           data: controller.getSeriesList('y'),
           x1: controller.dmnViewPortX1,
@@ -171,7 +187,7 @@ class Home extends GetWidget<HomeController> {
 
   Widget zGroup() {
     return GetBuilder<HomeController>(builder: (value) {
-      print('appChart(0) returned');
+      print('app: appChart(0) returned');
       return SensorChart(
           data: controller.getSeriesList('z'),
           x1: controller.dmnViewPortX1,
@@ -204,7 +220,7 @@ class Home extends GetWidget<HomeController> {
     );
   }
 
-  Widget cmndButton() {
+  Widget cmndButton1() {
     return GetX<HomeController>(
       //id: 'cmndButton',
       builder: (_) => ElevatedButton(
@@ -224,72 +240,69 @@ class Home extends GetWidget<HomeController> {
           shadowColor: Colors.grey[700],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
-            side:
-                BorderSide(color: Get.theme.accentColor), //  Colors.grey[600]),
+            side: BorderSide(
+                color: Get.theme.buttonTheme.colorScheme
+                    .primaryVariant), //  Colors.grey[600]),
           ),
         ),
       ),
     );
   }
 
-  Widget trigStartButton() {
-    return ElevatedButton.icon(
-      label: Obx(() => Text(controller.trigStartText())),
-      icon: Icon(Icons.play_arrow),
-      onPressed: () => controller.handleTrigStartPressed(),
-      onLongPress: () async {
+  Widget cmndButton() {
+    return ButtonGeneral(
+      label: Obx(() => Text(controller.cmndText)),
+      icon: Icon(Icons.arrow_forward_sharp),
+      onPressedcCallback: controller.handleCmndPressed,
+      onLongPressedCallback: () async {
         await controller.handleLongPress(
-          controller.trigStartText.value,
+          controller.cmndText,
+          startStopText: 'run',
+        );
+      },
+    );
+  }
+
+  Widget trigStartButton() {
+    return ButtonGeneral(
+      label: Obx(() => Text(controller.trigStartText)),
+      icon: Icon(Icons.subdirectory_arrow_right_sharp),
+      onPressedcCallback: controller.handleTrigStartPressed,
+      onLongPressedCallback: () async {
+        await controller.handleLongPress(
+          controller.trigStartText,
           startStopText: 'start',
         );
       },
-      style: ElevatedButton.styleFrom(
-        primary: Colors.blueGrey[600],
-        elevation: 15.0,
-        shadowColor: Colors.grey[700],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          side: BorderSide(color: Get.theme.accentColor), //.grey[600]),
-        ),
-      ),
     );
   }
 
   Widget trigStopButton() {
-    return ElevatedButton.icon(
-      label: Obx(() => Text(controller.trigStopText())),
-      icon: Icon(Icons.stop),
-      onPressed: () => controller.handleTrigStopPressed(),
-      onLongPress: () async {
+    return ButtonGeneral(
+      label: Obx(() => Text(controller.trigStopText)),
+      icon: Icon(Icons.keyboard_tab_sharp),
+      onPressedcCallback: controller.handleTrigStopPressed,
+      onLongPressedCallback: () async {
         await controller.handleLongPress(
-          controller.trigStopText.value,
+          controller.trigStopText,
           startStopText: 'stop',
         );
       },
-      style: ElevatedButton.styleFrom(
-        primary: Colors.blueGrey[600],
-        elevation: 15.0,
-        shadowColor: Colors.grey[700],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          side: BorderSide(color: Get.theme.accentColor), //Colors.grey[600]),
-        ),
-      ),
     );
   }
 
   Widget captureButton() {
-    return ElevatedButton(
-      child: Obx(() => Text(controller.modeText())),
-      onPressed: () => controller.handleModePressed(),
-      style: ElevatedButton.styleFrom(
-        primary: Colors.blueGrey[600],
-        elevation: 15.0,
-        shadowColor: Colors.grey[700],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          side: BorderSide(color: Get.theme.accentColor), //Colors.grey[600]),
-        ),
+    return GetX<HomeController>(
+      builder: (ctl) => ButtonGeneral(
+        label: Text(ctl.modeText),
+        icon: Icon(ctl.isCloud ? Icons.cloud_upload_sharp : Icons.save_alt),
+        onPressedcCallback: ctl.handleModePressed,
+        onLongPressedCallback: () async {
+          await ctl.handleLongPress(
+            ctl.trigStopText,
+            startStopText: 'mode',
+          );
+        },
       ),
     );
   }

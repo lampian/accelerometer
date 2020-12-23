@@ -2,7 +2,7 @@
 import 'package:accelerometer/controllers/user_controller.dart';
 import 'package:accelerometer/models/user.dart';
 import 'package:accelerometer/services/database.dart';
-import 'package:accelerometer/utils/utils.dart';
+import 'package:accelerometer/widgets/utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
@@ -35,7 +35,7 @@ class AuthController extends GetxController {
   User get user => _firebaseUser.value;
   User get currentUser {
     User x = auth.currentUser;
-    print('current user email: ${x.email}');
+    print('app: current user email: ${x.email}');
     return x;
   }
 

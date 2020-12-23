@@ -20,7 +20,7 @@ class LevelTrigController extends GetxController {
     dynamic lowerValue,
     dynamic upperValue,
   ) {
-    print('slider- lower: $lowerValue upper: $upperValue');
+    print('app: slider- lower: $lowerValue upper: $upperValue');
     startTrigLevel.value = lowerValue as double;
     //zoomMax = upperValue;
     //update();
@@ -31,7 +31,7 @@ class LevelTrigController extends GetxController {
     dynamic lowerValue,
     dynamic upperValue,
   ) {
-    print('slider- lower: $lowerValue upper: $upperValue');
+    print('app: slider- lower: $lowerValue upper: $upperValue');
     endTrigLevel.value = lowerValue as double;
     //zoomMax = upperValue;
     //update();

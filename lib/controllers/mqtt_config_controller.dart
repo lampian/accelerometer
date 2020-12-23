@@ -35,7 +35,7 @@ class MqttConfigController extends GetxController {
     super.onInit();
     _user = Get.find<AuthController>().currentUser;
     if (user?.email == '') {
-      print('mqtt config controller user is empty during init');
+      print('app: mqtt config controller user is empty during init');
       return;
     }
     _mqttList.bindStream(Database().userMqttStream(user?.uid ?? ''));

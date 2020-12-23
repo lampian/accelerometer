@@ -1,6 +1,6 @@
 // @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
-import 'package:accelerometer/utils/utils.dart';
+import 'package:accelerometer/widgets/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,7 +11,7 @@ class SignUp extends GetWidget<AuthController> {
 
   @override
   Widget build(BuildContext context) {
-    print('ims: sign up');
+    print('app: sign up');
     return Scaffold(
       appBar: AppBar(
         title: Text("Sign Up"),

@@ -18,7 +18,7 @@ class Database {
       });
       return true;
     } catch (e) {
-      print('ims: database $e');
+      print('app: database $e');
       return false;
     }
   }
@@ -27,7 +27,7 @@ class Database {
     try {
       await _firestore.collection("users").doc(uid).set(user.toJson());
     } catch (e) {
-      print('ims: database $e');
+      print('app: database $e');
       rethrow;
     }
   }
@@ -39,7 +39,7 @@ class Database {
       return UserModel.fromDocumentSnapshot(
           documentSnapshot: _doc); //documentSnapshot: _doc);
     } catch (e) {
-      print('ims: database $e');
+      print('app: database $e');
       rethrow;
     }
   }
@@ -100,7 +100,7 @@ class Database {
   //     //if true, add room id to users rooms collection
   //     _firestore.collection("things").doc(thing.id).set(thing.toJson());
   //   } catch (e) {
-  //     print('ims: database $e');
+  //     print('app: database $e');
   //     rethrow;
   //   }
   // }
@@ -109,7 +109,7 @@ class Database {
   //   try {
   //     await _firestore.collection("things").doc(thing.id).set(thing.toJson());
   //   } catch (e) {
-  //     print('ims: database $e');
+  //     print('app: database $e');
   //     rethrow;
   //   }
   // }
@@ -119,7 +119,7 @@ class Database {
       Map<String, dynamic> data = {'config': payload};
       await _firestore.collection("devices").doc(device).set(data);
     } catch (e) {
-      print('ims: database $e');
+      print('app: database $e');
       rethrow;
     }
   }
@@ -128,7 +128,7 @@ class Database {
   //   try {
   //     await _firestore.collection("things").doc(thing.id).delete();
   //   } catch (e) {
-  //     print('ims: database $e');
+  //     print('app: database $e');
   //     rethrow;
   //   }
   // }
@@ -174,7 +174,7 @@ class Database {
   //         .doc(channel.channelID)
   //         .set(channel.toJson());
   //   } catch (e) {
-  //     print('ims: database $e');
+  //     print('app: database $e');
   //     rethrow;
   //   }
   // }
@@ -207,7 +207,7 @@ class Database {
           //.set({"roomId": roomId});
           .set(mqtt.toJson());
     } catch (e) {
-      print('ims: database $e');
+      print('app: database $e');
       rethrow;
     }
   }
@@ -222,7 +222,7 @@ class Database {
           //.update(mqtt.toJson());
           .set(mqtt.toJson()); //also works
     } catch (e) {
-      print('ims: database $e');
+      print('app: database $e');
       return false;
     }
     return true;
@@ -237,7 +237,7 @@ class Database {
           .doc(mqtt.id)
           .delete();
     } catch (e) {
-      print('ims: database $e');
+      print('app: database $e');
       return false;
     }
     return true;

@@ -14,11 +14,11 @@ class TimingSetupController extends GetxController {
 
 class TimingSetup extends GetWidget<TimingSetupController> {
   TimingSetup({@required Duration duration}) {
-    controller.days.value = duration?.inDays ?? 0;
-    controller.hrs.value = duration?.inHours ?? 0 % 24;
-    controller.min.value = duration?.inMinutes ?? 0 % 60;
-    controller.sec.value = duration?.inSeconds ?? 0 % 60;
-    controller.msec.value = duration?.inMilliseconds ?? 0 % 1000;
+    controller.days.value = (duration?.inDays ?? 0);
+    controller.hrs.value = (duration?.inHours ?? 0) % 24;
+    controller.min.value = (duration?.inMinutes ?? 0) % 60;
+    controller.sec.value = (duration?.inSeconds ?? 0) % 60;
+    controller.msec.value = (duration?.inMilliseconds ?? 0) % 1000;
   }
   Widget build(BuildContext context) {
     return OrientationBuilder(
@@ -206,7 +206,7 @@ class TimingSetup extends GetWidget<TimingSetupController> {
             (controller.min.value * 60 * 1000) +
             (controller.hrs.value * 60 * 60 * 1000) +
             (controller.days.value * 24 * 60 * 60 * 1000));
-    print('timing seup getDuration duration: $duration');
+    print('app: timing seup getDuration duration: $duration');
     return duration;
   }
 }

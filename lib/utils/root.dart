@@ -17,14 +17,15 @@ class Root extends GetWidget<AuthController> {
   Widget build(BuildContext context) {
     return GetX(
       builder: (_) {
-        print('ims: root');
-        var aUser = controller.user;
-        if (aUser?.email == '') {
-          return Login();
-        }
+        print('app: root');
+        print('app: user uid: ${controller.user?.uid}');
+        // var aUser = controller.user;
+        // if (aUser?.email == '') {
+        //   return Login();
+        // }
 
-        print('ims: root user- ${aUser?.email}');
-        if (controller.user.uid != null) {
+        //print('app: root user- ${aUser?.email}');
+        if (controller.user?.uid != null) {
           Get.put<MqttManager>(MqttManager());
           Get.put<HomeController>(HomeController());
           Get.put<LevelTrigController>(LevelTrigController());

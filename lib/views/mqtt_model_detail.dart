@@ -216,7 +216,7 @@ class MqttModelDetail extends GetWidget<MqttModelDetailController> {
             //Get.snackbar('Saved', 'Save operation succeeded');
             Get.back();
           } else {
-            print('mqtModelDetail - save to firestore failed');
+            print('app: mqtModelDetail - save to firestore failed');
             Get.snackbar(
               'Error',
               'Save operation failed,'
