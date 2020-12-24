@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:accelerometer/models/sensor_model.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/services/sensor.dart';
+import 'package:accelerometer/utils/duration_helper.dart';
 import 'package:accelerometer/views/level_trig_setup.dart';
 import 'package:accelerometer/views/timing_setup.dart';
 
@@ -550,6 +551,9 @@ class HomeController extends GetxController {
   void mapTrig() {}
 
   final modesText = const ['Local', 'Cloud'];
+  final localIdx = 0;
+  final cloudIdx = 1;
+
   var _modeText = 'Local'.obs;
   String get modeText => _modeText.value;
   set modeText(String value) => _modeText.value = value;
@@ -567,12 +571,12 @@ class HomeController extends GetxController {
       modeText = modesText.first;
     }
     //capture
-    if (modeText == modesText[0]) {
+    if (modeText == modesText[localIdx]) {
       stateMan(command: commands.none, mode: modes.capture);
       isCloud = false;
     }
     //persist
-    else if (modeText == modesText[1]) {
+    else if (modeText == modesText[cloudIdx]) {
       stateMan(command: commands.none, mode: modes.persist);
       isCloud = true;
     }
@@ -609,7 +613,8 @@ class HomeController extends GetxController {
     print('app: stop timer: ${DateTime.now()}');
     stateMan(command: commands.start, mode: currentMode);
     stateExecute(modeChanged: modeChanged, stateChanged: stateChanged);
-    return Timer(Duration(seconds: 10), stopTimerCallback);
+    return Timer(Duration(milliseconds: runUntilDuration.inMilliseconds),
+        stopTimerCallback);
   }
 
   void stopTimerCallback() {
@@ -681,14 +686,23 @@ class HomeController extends GetxController {
     var astr = 'Sampling at $samplePeriod msec.\n';
     if (updateData) {
       astr += 'Capturing';
+      if (trigStopText == triggerType[levelIdx] && stopPosEdge) {
+        astr += ' until postive edge $stopLevel level detected';
+      } else if (trigStopText == triggerType[levelIdx] && !stopPosEdge) {
+        astr += ' until negative edge $stopLevel level detected';
+      } else if (trigStopText == triggerType[timerIdx]) {
+        astr += ' for ${durationToString(duration: runUntilDuration)}';
+      } else {
+        astr += ' until Stop key pressed';
+      }
     } else if (trigStartText == triggerType[levelIdx]) {
       astr += 'Waiting for ';
       astr += startPosEdge ? 'positive edge' : 'negative edge';
       astr += 'at trigger level ';
       astr += 'at $startLevel';
     } else if (trigStartText == triggerType[timerIdx]) {
-      astr += 'Waiting for ${waitForDuration.inSeconds} sec ';
-      astr += 'timeout to complete';
+      astr += 'Waiting for ${durationToString(duration: waitForDuration)}';
+      astr += ' timeout to complete before capturing';
     }
     info = astr;
   }

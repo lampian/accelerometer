@@ -69,11 +69,11 @@ class Sensor {
   }
 
   // sample rate of accelerometer around 20ms ie 50samples/sec
-  // 1000 samples at around 20 sec smple rate
+  // 1000 samples at around 20 sec sample rate
   // swap over buffer most propably a overkill
-  var eventList = <AccelerometerEvent>[];
+  var eventList = <UserAccelerometerEvent>[];
   void listenToEvents() {
-    accelerometerEvents.listen((event) {
+    userAccelerometerEvents.listen((event) {
       eventList.add(event);
       //print('accel event ${DateTime.now()}');
     });

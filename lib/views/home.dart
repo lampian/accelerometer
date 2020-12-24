@@ -76,15 +76,12 @@ class Home extends GetWidget<HomeController> {
         ),
 
         Expanded(
-          flex: 1,
+          flex: 2,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(0, 25, 0, 25),
             child: Container(
               color: Colors.transparent,
-              child: AppSlider(
-                vertical: true,
-                callBack: controller.sliderCallBack,
-              ),
+              child: infoGroupLandscape(),
             ),
           ),
         ),
@@ -130,14 +127,7 @@ class Home extends GetWidget<HomeController> {
             padding: const EdgeInsets.fromLTRB(25, 0, 25, 0),
             child: Container(
               color: Colors.transparent,
-              child: GetX<HomeController>(
-                builder: (_) => _.showInfo
-                    ? infoGroup()
-                    : AppSlider(
-                        vertical: false,
-                        callBack: _.sliderCallBack,
-                      ),
-              ),
+              child: infoGroupPortrait(),
             ),
           ),
         ),
@@ -151,14 +141,39 @@ class Home extends GetWidget<HomeController> {
     );
   }
 
-  Widget infoGroup() {
-    return Container(
-      color: Colors.transparent,
-      child: Center(
-          child: Text(
-        controller.info,
-        style: TextStyle(color: Get.theme.indicatorColor, fontSize: 18),
-      )),
+  Widget infoGroupLandscape() {
+    return GetX<HomeController>(
+      builder: (_) => _.showInfo
+          ? infoPortrait()
+          : AppSlider(
+              vertical: true,
+              callBack: _.sliderCallBack,
+            ),
+    );
+  }
+
+  Widget infoGroupPortrait() {
+    return GetX<HomeController>(
+      builder: (_) => _.showInfo
+          ? infoPortrait()
+          : AppSlider(
+              vertical: false,
+              callBack: _.sliderCallBack,
+            ),
+    );
+  }
+
+  Widget infoPortrait() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        color: Colors.transparent,
+        child: Center(
+            child: Text(
+          controller.info,
+          style: TextStyle(color: Get.theme.indicatorColor, fontSize: 18),
+        )),
+      ),
     );
   }
 
@@ -220,40 +235,11 @@ class Home extends GetWidget<HomeController> {
     );
   }
 
-  Widget cmndButton1() {
-    return GetX<HomeController>(
-      //id: 'cmndButton',
-      builder: (_) => ElevatedButton(
-        child: Text(controller.cmndText),
-        onPressed: () => controller.handleCmndPressed(),
-        onLongPress: () async {
-          await controller.handleLongPress(
-            controller.cmndText,
-            startStopText: 'run',
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          primary: controller.waiting
-              ? Colors.yellow[800]
-              : Colors.blueGrey[600], //add waiting color
-          elevation: 15.0,
-          shadowColor: Colors.grey[700],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
-            side: BorderSide(
-                color: Get.theme.buttonTheme.colorScheme
-                    .primaryVariant), //  Colors.grey[600]),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget cmndButton() {
     return ButtonGeneral(
       label: Obx(() => Text(controller.cmndText)),
       icon: Icon(Icons.arrow_forward_sharp),
-      onPressedcCallback: controller.handleCmndPressed,
+      onPressedCallback: controller.handleCmndPressed,
       onLongPressedCallback: () async {
         await controller.handleLongPress(
           controller.cmndText,
@@ -267,7 +253,7 @@ class Home extends GetWidget<HomeController> {
     return ButtonGeneral(
       label: Obx(() => Text(controller.trigStartText)),
       icon: Icon(Icons.subdirectory_arrow_right_sharp),
-      onPressedcCallback: controller.handleTrigStartPressed,
+      onPressedCallback: controller.handleTrigStartPressed,
       onLongPressedCallback: () async {
         await controller.handleLongPress(
           controller.trigStartText,
@@ -281,7 +267,7 @@ class Home extends GetWidget<HomeController> {
     return ButtonGeneral(
       label: Obx(() => Text(controller.trigStopText)),
       icon: Icon(Icons.keyboard_tab_sharp),
-      onPressedcCallback: controller.handleTrigStopPressed,
+      onPressedCallback: controller.handleTrigStopPressed,
       onLongPressedCallback: () async {
         await controller.handleLongPress(
           controller.trigStopText,
@@ -296,7 +282,7 @@ class Home extends GetWidget<HomeController> {
       builder: (ctl) => ButtonGeneral(
         label: Text(ctl.modeText),
         icon: Icon(ctl.isCloud ? Icons.cloud_upload_sharp : Icons.save_alt),
-        onPressedcCallback: ctl.handleModePressed,
+        onPressedCallback: ctl.handleModePressed,
         onLongPressedCallback: () async {
           await ctl.handleLongPress(
             ctl.trigStopText,

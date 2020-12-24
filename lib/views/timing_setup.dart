@@ -1,4 +1,5 @@
 // @dart=2.9
+import 'package:accelerometer/widgets/button_general.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
@@ -35,12 +36,12 @@ class TimingSetup extends GetWidget<TimingSetupController> {
 
   Widget handleOrientation(BuildContext context) {
     if (Get.context.isLargeTablet) {
-      return Container();
+      return getPortrait();
     } else if (Get.context.isTablet) {
-      return Container();
+      return getPortrait();
     } else {
       if (Get.context.isLandscape) {
-        return Container();
+        return getLandscape();
       } else {
         return getPortrait();
       }
@@ -52,7 +53,7 @@ class TimingSetup extends GetWidget<TimingSetupController> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Expanded(
-          flex: 8,
+          flex: 9,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(3, 60, 3, 3),
             child: Row(
@@ -62,7 +63,7 @@ class TimingSetup extends GetWidget<TimingSetupController> {
                 Expanded(flex: 1, child: sliderGroupHours()),
                 Expanded(flex: 1, child: sliderGroupMinutes()),
                 Expanded(flex: 1, child: sliderGroupSeconds()),
-                Expanded(flex: 1, child: sliderGroupMiliseconds()),
+                Expanded(flex: 1, child: sliderGroupMSecs()),
               ],
             ),
           ),
@@ -70,65 +71,94 @@ class TimingSetup extends GetWidget<TimingSetupController> {
         Expanded(
           flex: 1,
           child: Container(
-              height: Get.context.height,
-              color: Colors.blue[400],
+              height: 20, color: Colors.transparent, child: acceptCntl()),
+        ),
+      ],
+    );
+  }
+
+  Widget getLandscape() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 9,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(40, 3, 3, 3),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(flex: 1, child: sliderGroupDays(vertical: false)),
+                Expanded(flex: 1, child: sliderGroupHours(vertical: false)),
+                Expanded(flex: 1, child: sliderGroupMinutes(vertical: false)),
+                Expanded(flex: 1, child: sliderGroupSeconds(vertical: false)),
+                Expanded(flex: 1, child: sliderGroupMSecs(vertical: false)),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Container(
+              width: 30, //Get.context.width,
+              color: Colors.transparent,
               child: acceptCntl()),
         ),
       ],
     );
   }
 
-  Container sliderGroupDays() {
+  Container sliderGroupDays({bool vertical = true}) {
     return sliderGroup(
         tooltipText: 'Day: \n',
         min: 0,
         max: 31,
         val: controller.days.value.toDouble(),
-        vertical: true,
+        vertical: vertical,
         callBack: (_, min, max) =>
             {controller.days.value = (min as double).toInt()});
   }
 
-  Container sliderGroupHours() {
+  Container sliderGroupHours({bool vertical = true}) {
     return sliderGroup(
         tooltipText: 'Hrs: \n',
         min: 0,
         max: 23,
         val: controller.hrs.value.toDouble(),
-        vertical: true,
+        vertical: vertical,
         callBack: (_, min, max) =>
             {controller.hrs.value = (min as double).toInt()});
   }
 
-  Container sliderGroupMinutes() {
+  Container sliderGroupMinutes({bool vertical = true}) {
     return sliderGroup(
         tooltipText: 'Min: \n',
         min: 0,
         max: 59,
         val: controller.min.value.toDouble(),
-        vertical: true,
+        vertical: vertical,
         callBack: (_, min, max) =>
             {controller.min.value = (min as double).toInt()});
   }
 
-  Container sliderGroupSeconds() {
+  Container sliderGroupSeconds({bool vertical = true}) {
     return sliderGroup(
         tooltipText: 'Sec: \n',
         min: 0,
         max: 59,
         val: controller.sec.value.toDouble(),
-        vertical: true,
+        vertical: vertical,
         callBack: (_, min, max) =>
             {controller.sec.value = (min as double).toInt()});
   }
 
-  Container sliderGroupMiliseconds() {
+  Container sliderGroupMSecs({bool vertical = true}) {
     return sliderGroup(
         tooltipText: 'ms: \n',
         min: 0,
         max: 999,
         val: controller.msec.value.toDouble(),
-        vertical: true,
+        vertical: vertical,
         callBack: (_, min, max) =>
             {controller.msec.value = (min as double).toInt()});
   }
@@ -147,7 +177,7 @@ class TimingSetup extends GetWidget<TimingSetupController> {
         callBack ?? _dummyCallBack;
     return Container(
       height: Get.context.height,
-      color: Colors.blue[100],
+      color: Colors.grey[700],
       child: FlutterSlider(
         rtl: true,
         centeredOrigin: false,
@@ -164,15 +194,17 @@ class TimingSetup extends GetWidget<TimingSetupController> {
         tooltip: FlutterSliderTooltip(
           format: (String value) => tooltipText + value,
           textStyle: TextStyle(
-            fontSize: 20,
+            fontSize: 16,
             color: Colors.white,
           ),
           boxStyle: FlutterSliderTooltipBox(
             decoration: BoxDecoration(
-              color: Colors.redAccent.withOpacity(0.7),
+              color: Colors.transparent, //redAccent.withOpacity(0.7),
             ),
           ),
-          positionOffset: FlutterSliderTooltipPositionOffset(top: -50),
+          positionOffset: vertical
+              ? FlutterSliderTooltipPositionOffset(top: -50)
+              : FlutterSliderTooltipPositionOffset(left: -60),
           alwaysShowTooltip: true,
         ),
       ),
@@ -180,22 +212,11 @@ class TimingSetup extends GetWidget<TimingSetupController> {
   }
 
   Widget acceptCntl() {
-    return Padding(
-      padding: EdgeInsets.all(12),
-      child: ElevatedButton.icon(
-        label: Text('Accept'),
-        icon: Icon(Icons.arrow_back_sharp),
-        onPressed: () => Get.back(result: getDuration()),
-        style: ElevatedButton.styleFrom(
-          primary: Colors.blueGrey[600],
-          elevation: 15.0,
-          shadowColor: Colors.grey[700],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
-            side: BorderSide(color: Get.theme.accentColor), //Colors.grey[600]),
-          ),
-        ),
-      ),
+    return ButtonGeneral(
+      label: Text('Accept'),
+      icon: Icon(Icons.check_box_outline_blank_sharp),
+      onPressedCallback: () => {Get.back(result: getDuration())},
+      onLongPressedCallback: () => {Get.back(result: getDuration())},
     );
   }
 

@@ -6,13 +6,13 @@ class ButtonGeneral extends StatelessWidget {
     Key key,
     @required this.label,
     @required this.icon,
-    @required this.onPressedcCallback,
+    @required this.onPressedCallback,
     @required this.onLongPressedCallback,
   }) : super(key: key);
 
   final Widget label;
   final Icon icon;
-  final Function onPressedcCallback;
+  final Function onPressedCallback;
   final Function onLongPressedCallback;
 
   @override
@@ -20,7 +20,7 @@ class ButtonGeneral extends StatelessWidget {
     return ElevatedButton.icon(
       label: label,
       icon: icon,
-      onPressed: () => onPressedcCallback(),
+      onPressed: () => onPressedCallback(),
       onLongPress: () => onLongPressedCallback(),
       style: ElevatedButton.styleFrom(
         primary: Colors.blueGrey[600],
