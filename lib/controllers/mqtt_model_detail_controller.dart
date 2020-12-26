@@ -1,6 +1,6 @@
 // @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
-import 'package:accelerometer/models/mqtt_model.dart';
+import 'package:accelerometer/models/thing.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:accelerometer/services/database.dart';

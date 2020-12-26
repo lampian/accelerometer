@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:accelerometer/certificate/keys.dart';
 import 'package:accelerometer/certificate/rsa_file_handler.dart';
-import 'package:accelerometer/models/mqtt_model.dart';
+import 'package:accelerometer/models/thing.dart';
 import 'package:accelerometer/utils/storage.dart';
 import 'package:get/state_manager.dart';
 import 'package:jose/jose.dart';

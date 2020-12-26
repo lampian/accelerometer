@@ -16,7 +16,7 @@ class Home extends GetWidget<HomeController> {
       builder: (context, orientation) {
         return Scaffold(
           appBar: AppBar(
-            title: Text('title'),
+            title: Text('Accelerometer'),
             actions: [],
           ),
           drawer: HomeDrawer(key: GlobalKey()),

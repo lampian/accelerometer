@@ -33,7 +33,7 @@ class SensorModel {
   }
 
   Map<String, dynamic> toJsonMap(String device) => {
-        "t": timeStamp?.millisecondsSinceEpoch ?? 0 / 1000,
+        "t": (timeStamp?.millisecondsSinceEpoch ?? 0) / 1000,
         "d": int.parse(device),
         "c": channel,
         "v": mms2rms(),

@@ -1,6 +1,6 @@
 // @dart=2.9
 import 'package:accelerometer/controllers/mqtt_config_controller.dart';
-import 'package:accelerometer/models/mqtt_model.dart';
+import 'package:accelerometer/models/thing.dart';
 import 'package:accelerometer/models/sensor_model.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/utils/storage.dart';

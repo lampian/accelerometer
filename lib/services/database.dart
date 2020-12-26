@@ -1,7 +1,7 @@
 // @dart=2.9
 import 'dart:async';
 
-import 'package:accelerometer/models/mqtt_model.dart';
+import 'package:accelerometer/models/thing.dart';
 import 'package:accelerometer/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

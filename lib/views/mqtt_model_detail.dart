@@ -1,6 +1,6 @@
 // @dart=2.9
 import 'package:accelerometer/controllers/mqtt_model_detail_controller.dart';
-import 'package:accelerometer/models/mqtt_model.dart';
+import 'package:accelerometer/models/thing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:get/get.dart';

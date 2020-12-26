@@ -1,7 +1,7 @@
 // @dart=2.9
 import 'dart:async';
 
-import 'package:accelerometer/models/mqtt_model.dart';
+import 'package:accelerometer/models/thing.dart';
 import 'package:accelerometer/services/database.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/views/mqtt_model_detail.dart';
