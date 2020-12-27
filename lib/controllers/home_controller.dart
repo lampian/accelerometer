@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:accelerometer/models/channel_model.dart';
 import 'package:accelerometer/models/sensor_model.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/services/sensor.dart';
@@ -672,12 +673,18 @@ class HomeController extends GetxController {
     }
   }
 
+  var pubChannel = ChannelModel.emptyModel();
+
+  //TODO fix device id and topic hard coded values
   var mqttPubBuf = <SensorModel>[];
   void mqttPublish(SensorModel aModel, bool flush) {
     mqttPubBuf.add(aModel);
     bool publishMessage = flush || mqttPubBuf.length >= mqttBufTrigLength;
     if (publishMessage) {
-      mqttMan?.publish(SensorModelConvert.toJsonEncoded('1000', mqttPubBuf));
+      mqttMan?.publish(SensorModelConvert.toJsonEncoded(
+        '1000',
+        mqttPubBuf,
+      ));
       mqttPubBuf.clear();
     }
   }

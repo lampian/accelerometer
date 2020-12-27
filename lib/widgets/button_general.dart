@@ -1,27 +1,30 @@
+// @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ButtonGeneral extends StatelessWidget {
-  const ButtonGeneral({
+  ButtonGeneral({
     Key key,
     @required this.label,
     @required this.icon,
     @required this.onPressedCallback,
     @required this.onLongPressedCallback,
+    this.enable,
   }) : super(key: key);
 
   final Widget label;
   final Icon icon;
   final Function onPressedCallback;
   final Function onLongPressedCallback;
+  var enable = true;
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
       label: label,
       icon: icon,
-      onPressed: () => onPressedCallback(),
-      onLongPress: () => onLongPressedCallback(),
+      onPressed: enable ? () => onPressedCallback() : null,
+      onLongPress: enable ? () => onLongPressedCallback() : null,
       style: ElevatedButton.styleFrom(
         primary: Colors.blueGrey[600],
         elevation: 15.0,

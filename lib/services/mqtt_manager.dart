@@ -3,7 +3,8 @@ import 'dart:io';
 
 import 'package:accelerometer/certificate/keys.dart';
 import 'package:accelerometer/certificate/rsa_file_handler.dart';
-import 'package:accelerometer/models/thing.dart';
+import 'package:accelerometer/models/channel_model.dart';
+import 'package:accelerometer/models/thing_model.dart';
 import 'package:accelerometer/utils/storage.dart';
 import 'package:get/state_manager.dart';
 import 'package:jose/jose.dart';
@@ -14,20 +15,8 @@ enum MqttConnectState { connected, disconnected, connecting }
 
 class MqttManager extends GetxController {
   MqttManager();
-  MqttModel mqttModel = MqttModel(
-    id: '',
-    host: '',
-    port: '',
-    identifier: '',
-    topic: '',
-    willTopic: '',
-    willMessage: '',
-    qos: 0,
-    keepAlivePeriod: 0,
-    isPub: false,
-    secure: false,
-    logging: false,
-  );
+  ThingModel thingModel = ThingModel.emptyModel();
+  ChannelModel channelModel = ChannelModel.emptyModel();
   String rsaFile = '';
 
   MqttServerClient _client = MqttServerClient('', '');
@@ -65,12 +54,15 @@ class MqttManager extends GetxController {
       onInitFailure = true;
     }
 
-    mqttModel = Storage.retrieveMqttModel();
+    //thingModel = Storage.retrieveMqttModel();
   }
 
   bool initializeMQTTClient() {
-    mqttModel = Storage.retrieveMqttModel();
-    if (mqttModel.id == '' || mqttModel.host == '') {
+    thingModel = Storage.retrieveMqttModel();
+    channelModel = Storage.retrieveChannelModel();
+    if (thingModel.id == '' ||
+        thingModel.host == '' ||
+        channelModel.topic == '') {
       print('app: GetStorage returned a empty or null instance');
       return false;
     } else if (onInitFailure) {
@@ -78,12 +70,12 @@ class MqttManager extends GetxController {
     }
 
     _client = MqttServerClient(
-      mqttModel.host,
-      mqttModel.identifier,
+      thingModel.host,
+      thingModel.identifier,
       maxConnectionAttempts: 1,
     );
-    _client.port = int.parse(mqttModel.port); // 8883;
-    _client.keepAlivePeriod = mqttModel.keepAlivePeriod; //20;
+    _client.port = int.parse(thingModel.port); // 8883;
+    _client.keepAlivePeriod = thingModel.keepAlivePeriod; //20;
     _client.onDisconnected = onDisconnected;
     _client.secure = true;
     _client.logging(on: true);
@@ -146,7 +138,7 @@ class MqttManager extends GetxController {
     _client.securityContext = context;
 
     final MqttConnectMessage connMess = MqttConnectMessage()
-        .withClientIdentifier(mqttModel.identifier)
+        .withClientIdentifier(thingModel.identifier)
         //.withWillTopic('') //controller.mqttModel.willTopic)
         //.withWillMessage('') //controller.mqttModel.willMessage)
         .startClean() // Non persistent session for testing
@@ -194,15 +186,24 @@ class MqttManager extends GetxController {
     _client.disconnect();
   }
 
+  var toQos = {
+    '0': MqttQos.atLeastOnce,
+    '1': MqttQos.atMostOnce,
+    '2': MqttQos.exactlyOnce
+  };
+
   void publish(String message) {
-    final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
+    var builder = MqttClientPayloadBuilder();
     builder.addString(message);
 
     //examples subscribes to published topic?????
     //client.subscribe(pubTopic, MqttQos.exactlyOnce);
 
     _client.publishMessage(
-        mqttModel.topic, MqttQos.atMostOnce, builder.payload);
+      channelModel.topic,
+      toQos[channelModel.qos],
+      builder.payload,
+    );
   }
 
   /// The subscribed callback
@@ -246,19 +247,19 @@ class MqttManager extends GetxController {
     /// The client has a change notifier object(see the Observable class)
     /// which we then listen to to get notifications of published updates
     /// to each subscribed topic.
-    _client.updates.listen((List<MqttReceivedMessage<MqttMessage>> c) {
-      //final MqttPublishMessage recMess = c[0].payload;
-      final MqttReceivedMessage recMess = c.first;
-      final String pt = 'qwerty';
-      //TODO sort out Uint8Buf issue
-      //MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-      received = pt;
-      lastRxMsg = pt;
-      lastRxTopic = mqttModel.topic;
-      //_currentState.setReceivedText(pt);
-      print('app: Change notification:: topic is <${c[0].topic}>,'
-          ' payload is <-- $pt -->');
-    });
+    // _client.updates.listen((List<MqttReceivedMessage<MqttMessage>> c) {
+    //   //final MqttPublishMessage recMess = c[0].payload;
+    //   final MqttReceivedMessage recMess = c.first;
+    //   final String pt = 'qwerty';
+    //   //TODO sort out Uint8Buf issue
+    //   //MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+    //   received = pt;
+    //   lastRxMsg = pt;
+    //   lastRxTopic = mqttModel.topic;
+    //   //_currentState.setReceivedText(pt);
+    //   print('app: Change notification:: topic is <${c[0].topic}>,'
+    //       ' payload is <-- $pt -->');
+    // });
   }
 
   /// The pre auto re connect callback

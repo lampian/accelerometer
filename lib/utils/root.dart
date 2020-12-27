@@ -1,8 +1,10 @@
 // @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
+import 'package:accelerometer/controllers/channel_config_controller.dart';
+import 'package:accelerometer/controllers/channel_model_detail_controller.dart';
 import 'package:accelerometer/controllers/home_controller.dart';
-import 'package:accelerometer/controllers/mqtt_config_controller.dart';
-import 'package:accelerometer/controllers/mqtt_model_detail_controller.dart';
+import 'package:accelerometer/controllers/thing_config_controller.dart';
+import 'package:accelerometer/controllers/thing_model_detail_controller.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/views/home.dart';
 import 'package:accelerometer/views/level_trig_setup.dart';
@@ -32,8 +34,10 @@ class Root extends GetWidget<AuthController> {
           Get.put<TimingSetupController>(TimingSetupController());
           Get.put<VSController>(VSController(), tag: 'start');
           Get.put<VSController>(VSController(), tag: 'end');
-          Get.put<MqttConfigController>(MqttConfigController());
-          Get.put<MqttModelDetailController>(MqttModelDetailController());
+          Get.put<ChannelConfigController>(ChannelConfigController());
+          Get.put<ChannelModelDetailController>(ChannelModelDetailController());
+          Get.put<ThingModelDetailController>(ThingModelDetailController());
+          Get.put<ThingConfigController>(ThingConfigController());
           return Home();
         } else {
           return Login();

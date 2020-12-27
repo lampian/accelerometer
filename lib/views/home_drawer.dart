@@ -1,7 +1,7 @@
 // @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/utils/root.dart';
-import 'package:accelerometer/views/mqtt_config.dart';
+import 'package:accelerometer/views/thing_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -36,7 +36,7 @@ class HomeDrawer extends StatelessWidget {
           ListTile(
             title: Text('Manage Mqtt configuration'),
             onTap: () {
-              Get.to(MqttConfig());
+              Get.to(ThingConfig());
             },
           ),
           ListTile(

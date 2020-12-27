@@ -1,13 +1,14 @@
 // @dart=2.9
-import 'package:accelerometer/controllers/mqtt_model_detail_controller.dart';
-import 'package:accelerometer/models/thing.dart';
+import 'package:accelerometer/controllers/thing_model_detail_controller.dart';
+import 'package:accelerometer/models/thing_model.dart';
+import 'package:accelerometer/widgets/button_general.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:get/get.dart';
 
-class MqttModelDetail extends GetWidget<MqttModelDetailController> {
-  MqttModelDetail(MqttModel mqttModel, bool readOnly) {
-    controller.updateModel(mqttModel);
+class ThingModelDetail extends GetWidget<ThingModelDetailController> {
+  ThingModelDetail(ThingModel thingModel, bool readOnly) {
+    controller.updateModel(thingModel);
     controller.readOnly = readOnly;
   }
   @override
@@ -88,22 +89,24 @@ class MqttModelDetail extends GetWidget<MqttModelDetailController> {
       color: Colors.transparent,
       child: ListView(
         children: [
-          GetBuilder<MqttModelDetailController>(builder: ((_) {
-            return switchBox(
-                'Subscribe', 'Publish', _.isPub, _.isPubChanged, enabled);
-          })),
+          SizedBox(height: 8),
+          textBox(
+              ctl: controller.deviceIdTEC,
+              lbl: '*device id',
+              hnt: 'PubSub device id',
+              enable: enabled),
+          SizedBox(height: 8),
+          textBox(
+              ctl: controller.identifierTEC,
+              lbl: '*identifier',
+              hnt: 'PubSub identifier url',
+              enable: enabled),
           SizedBox(height: 8),
           textBox(ctl: controller.hostTEC, lbl: '*host', enable: enabled),
           SizedBox(height: 8),
           textBox(ctl: controller.portTEC, lbl: 'port', enable: enabled),
           SizedBox(height: 8),
-          textBox(ctl: controller.topicTEC, lbl: '*topic', enable: enabled),
-          SizedBox(height: 8),
-          textBox(ctl: controller.identifierTEC, lbl: '*id', enable: enabled),
-          SizedBox(height: 8),
           textBox(ctl: controller.keepAliveTEC, lbl: 'period', enable: enabled),
-          SizedBox(height: 8),
-          textBox(ctl: controller.qosTEC, lbl: 'QoS', enable: enabled),
         ],
       ),
     );
@@ -182,13 +185,13 @@ class MqttModelDetail extends GetWidget<MqttModelDetailController> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         cancelButton(),
-        saveButton(),
+        if (!controller.readOnly) saveButton(),
       ],
     );
   }
 
   Widget cancelButton() {
-    return GetBuilder<MqttModelDetailController>(
+    return GetBuilder<ThingModelDetailController>(
       builder: (_) => ElevatedButton(
         child: Text('Cancel'),
         onPressed: () {
@@ -208,7 +211,28 @@ class MqttModelDetail extends GetWidget<MqttModelDetailController> {
   }
 
   Widget saveButton() {
-    return GetBuilder<MqttModelDetailController>(
+    return ButtonGeneral(
+        label: Text('Save and return'),
+        icon: Icon(Icons.save_sharp),
+        onPressedCallback: () async {
+          if (await controller.saveMqtt()) {
+            Get.back();
+          } else {
+            print('app: mqtModelDetail - save to firestore failed');
+            Get.snackbar(
+              'Error',
+              'Save operation failed,'
+                  ' check data entered and connection',
+              snackPosition: SnackPosition.BOTTOM,
+              snackStyle: SnackStyle.GROUNDED,
+            );
+          }
+        },
+        onLongPressedCallback: () {});
+  }
+
+  Widget saveButton1() {
+    return GetBuilder<ThingModelDetailController>(
       builder: (_) => ElevatedButton(
         child: Text(controller.readOnly ? 'Ok' : 'Save and return'),
         onPressed: () async {

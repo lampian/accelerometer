@@ -1,10 +1,10 @@
 // @dart=2.9
 import 'dart:async';
 
-import 'package:accelerometer/models/thing.dart';
+import 'package:accelerometer/models/thing_model.dart';
 import 'package:accelerometer/services/database.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
-import 'package:accelerometer/views/mqtt_model_detail.dart';
+import 'package:accelerometer/views/thing_model_detail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
@@ -12,9 +12,9 @@ import 'auth_controller.dart';
 
 enum Mode { create, read, update, delete, copy, configure, test }
 
-class MqttConfigController extends GetxController {
-  final _mqttList = Rx<List<MqttModel>>();
-  List<MqttModel> get mqttList => _mqttList.value;
+class ThingConfigController extends GetxController {
+  final _thingList = Rx<List<ThingModel>>();
+  List<ThingModel> get thingList => _thingList.value;
 
   final _title = 'title'.obs;
   String get title => this._title.value;
@@ -35,10 +35,10 @@ class MqttConfigController extends GetxController {
     super.onInit();
     _user = Get.find<AuthController>().currentUser;
     if (user?.email == '') {
-      print('app: mqtt config controller user is empty during init');
+      print('app: thing config controller user is empty during init');
       return;
     }
-    _mqttList.bindStream(Database().userMqttStream(user?.uid ?? ''));
+    _thingList.bindStream(Database().userThingStream(user?.uid ?? ''));
   }
 
   void handleMode() {
@@ -72,33 +72,20 @@ class MqttConfigController extends GetxController {
     update();
   }
 
-  void editDetail(MqttModel model, bool readOnly) {
-    Get.to(MqttModelDetail(model, readOnly));
-    update();
+  void editDetail(ThingModel thingModel, bool readOnly) {
+    Get.to(ThingModelDetail(thingModel, readOnly));
+    //update();
   }
 
-  Future<bool> removeItem(MqttModel mqttMdoel) async {
+  Future<bool> removeItem(ThingModel thingModel) async {
     var user = Get.find<AuthController>().user;
-    if (await Database().deleteMqttAtUser(user.uid, mqttMdoel)) {
-      mode = Mode.read;
-      return true;
+    if (await Database().deleteThingAtUser(user.uid, thingModel)) {
+      if (await Database().deleteThing(thingModel)) {
+        mode = Mode.read;
+        return true;
+      }
+      return false;
     }
     return false;
-  }
-
-  MqttModel getEmptyModel(String id) {
-    return MqttModel(
-        id: id,
-        host: '',
-        identifier: '',
-        isPub: false,
-        keepAlivePeriod: 60,
-        logging: false,
-        port: '443',
-        qos: 0,
-        secure: true,
-        topic: '',
-        willMessage: '',
-        willTopic: '');
   }
 }

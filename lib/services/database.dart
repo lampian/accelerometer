@@ -1,7 +1,8 @@
 // @dart=2.9
 import 'dart:async';
 
-import 'package:accelerometer/models/thing.dart';
+import 'package:accelerometer/models/channel_model.dart';
+import 'package:accelerometer/models/thing_model.dart';
 import 'package:accelerometer/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -95,24 +96,35 @@ class Database {
   //   return a;
   // }
 
-  // Future<void> addThing(Thing thing) async {
+  // Future<void> addThing(ThingModel thing) async {
   //   try {
   //     //if true, add room id to users rooms collection
-  //     _firestore.collection("things").doc(thing.id).set(thing.toJson());
-  //   } catch (e) {
-  //     print('app: database $e');
-  //     rethrow;
-  //   }
-  // }
-
-  // Future<void> updateThing(Thing thing) async {
-  //   try {
   //     await _firestore.collection("things").doc(thing.id).set(thing.toJson());
   //   } catch (e) {
   //     print('app: database $e');
   //     rethrow;
   //   }
   // }
+
+  Future<bool> updateThing(ThingModel thing) async {
+    try {
+      await _firestore.collection("things").doc(thing.id).set(thing.toJson());
+      return true;
+    } catch (e) {
+      print('app: database $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteThing(ThingModel thing) async {
+    try {
+      await _firestore.collection("things").doc(thing.id).delete();
+      return true;
+    } catch (e) {
+      print('app: database $e');
+      return false;
+    }
+  }
 
   Future<void> updateDevice(String device, String payload) async {
     try {
@@ -123,15 +135,6 @@ class Database {
       rethrow;
     }
   }
-
-  // Future<void> deleteThing(Thing thing) async {
-  //   try {
-  //     await _firestore.collection("things").doc(thing.id).delete();
-  //   } catch (e) {
-  //     print('app: database $e');
-  //     rethrow;
-  //   }
-  // }
 
   // Stream<List<ChannelModel>> channelStream(String deviceID) {
   //   return _firestore
@@ -164,63 +167,79 @@ class Database {
   //   return aList;
   // }
 
-  // Future<void> addChannel(ChannelModel channel) async {
-  //   try {
-  //     //if true, add room id to users rooms collection
-  //     _firestore
-  //         .collection("things")
-  //         .doc(channel.deviceID)
-  //         .collection('channels')
-  //         .doc(channel.channelID)
-  //         .set(channel.toJson());
-  //   } catch (e) {
-  //     print('app: database $e');
-  //     rethrow;
-  //   }
-  // }
+  Future<bool> editChannel(ChannelModel channel) async {
+    try {
+      //if true, add room id to users rooms collection
+      await _firestore
+          .collection("things")
+          .doc(channel.deviceID)
+          .collection('channels')
+          .doc(channel.channelID)
+          .set(channel.toJson());
+      return true;
+    } catch (e) {
+      print('app: database $e');
+      return false;
+    }
+  }
 
-  Stream<List<MqttModel>> userMqttStream(String uid) {
+  Future<bool> deleteChannel(ChannelModel channel) async {
+    try {
+      await _firestore
+          .collection("things")
+          .doc(channel.deviceID)
+          .collection('channels')
+          .doc(channel.channelID)
+          .delete();
+      return true;
+    } catch (e) {
+      print('app: database $e');
+      return false;
+    }
+  }
+
+  Stream<List<ThingModel>> userThingStream(String uid) {
     var strm = _firestore
         .collection("users")
         .doc(uid)
-        .collection("mqtt")
+        .collection("things")
         //.orderBy("name", descending: false)
         .snapshots()
         .map((QuerySnapshot query) {
-      List<MqttModel> retVal = [];
+      List<ThingModel> retVal = [];
       query.docs.forEach((element) {
-        retVal.add(MqttModel.fromDocumentSnapshot(documentSnapshot: element));
+        retVal.add(ThingModel.fromDocumentSnapshot(documentSnapshot: element));
       });
       return retVal;
     });
     return strm;
   }
 
-  Future<void> addMqttToUser(String uid, MqttModel mqtt) async {
-    try {
-      //if true, add room id to users rooms collection
-      await _firestore
-          .collection("users")
-          .doc(uid)
-          .collection("mqtt")
-          .doc(mqtt.id)
-          //.set({"roomId": roomId});
-          .set(mqtt.toJson());
-    } catch (e) {
-      print('app: database $e');
-      rethrow;
-    }
-  }
+  // Future<void> addThingToUser(String uid, ThingModel thing) async {
+  //   try {
+  //     //if true, add room id to users rooms collection
+  //     await _firestore
+  //         .collection("users")
+  //         .doc(uid)
+  //         .collection("things")
+  //         .doc(thing.id)
+  //         //.set({"roomId": roomId});
+  //         .set(thing.toJson());
+  //   } catch (e) {
+  //     print('app: database $e');
+  //     rethrow;
+  //   }
+  // }
 
-  Future<bool> updateMqttAtUser(String uid, MqttModel mqtt) async {
+  Future<bool> updateThingAtUser(String uid, ThingModel thing) async {
     try {
       await _firestore
           .collection("users")
           .doc(uid)
-          .collection("mqtt")
-          .doc(mqtt.id)
+          .collection("things")
+          .doc(thing.id)
           //.update(mqtt.toJson());
-          .set(mqtt.toJson()); //also works
+          .set(thing.toJson()); //also works
     } catch (e) {
       print('app: database $e');
       return false;
@@ -228,18 +247,72 @@ class Database {
     return true;
   }
 
-  Future<bool> deleteMqttAtUser(String uid, MqttModel mqtt) async {
+  Future<bool> deleteThingAtUser(String uid, ThingModel thing) async {
     try {
       await _firestore
           .collection("users")
           .doc(uid)
-          .collection("mqtt")
-          .doc(mqtt.id)
+          .collection("things")
+          .doc(thing.id)
           .delete();
     } catch (e) {
       print('app: database $e');
       return false;
     }
     return true;
+  }
+
+  Stream<List<ChannelModel>> channelStreamFromUser(
+      String uid, String deviceID) {
+    return _firestore
+        .collection("users")
+        .doc(uid)
+        .collection("things")
+        .doc(deviceID)
+        .collection("channels")
+        .snapshots()
+        .map((QuerySnapshot query) {
+      List<ChannelModel> retVal = [];
+      query.docs.forEach((element) {
+        retVal
+            .add(ChannelModel.fromDocumentSnapshot(documentSnapshot: element));
+      });
+      return retVal;
+    });
+  }
+
+  Future<bool> editChannelAtUser(String uid, ChannelModel channel) async {
+    try {
+      //if true, add room id to users rooms collection
+      await _firestore
+          .collection("users")
+          .doc(uid)
+          .collection("things")
+          .doc(channel.deviceID)
+          .collection('channels')
+          .doc(channel.channelID)
+          .set(channel.toJson());
+      return true;
+    } catch (e) {
+      print('app: database $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteChannelAtUser(String uid, ChannelModel channel) async {
+    try {
+      await _firestore
+          .collection("users")
+          .doc(uid)
+          .collection("things")
+          .doc(channel.deviceID)
+          .collection('channels')
+          .doc(channel.channelID)
+          .delete();
+      return true;
+    } catch (e) {
+      print('app: database $e');
+      return false;
+    }
   }
 }

@@ -1,14 +1,14 @@
 // @dart=2.9
-import 'package:accelerometer/controllers/mqtt_config_controller.dart';
-import 'package:accelerometer/models/thing.dart';
-import 'package:accelerometer/models/sensor_model.dart';
+import 'package:accelerometer/controllers/thing_config_controller.dart';
+import 'package:accelerometer/models/thing_model.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/utils/storage.dart';
+import 'package:accelerometer/views/channel_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_guid/flutter_guid.dart';
 import 'package:get/get.dart';
 
-class MqttConfig extends GetWidget<MqttConfigController> {
+class ThingConfig extends GetWidget<ThingConfigController> {
   @override
   Widget build(BuildContext context) {
     controller.mqttManager = Get.find<MqttManager>();
@@ -111,7 +111,7 @@ class MqttConfig extends GetWidget<MqttConfigController> {
     return Visibility(
       visible: controller.mode == Mode.create ? true : false,
       child: FloatingActionButton(
-        onPressed: () => handleItemOnTap(MqttModel.emptyModel()),
+        onPressed: () => handleItemOnTap(ThingModel.emptyModel()),
         child: Icon(
           Icons.add,
           color: Colors.white,
@@ -122,29 +122,36 @@ class MqttConfig extends GetWidget<MqttConfigController> {
   }
 
   Widget listGroup() {
-    if (controller.mqttList.isEmpty) {
+    if (controller.thingList.isEmpty) {
       return Text('Nothing to show');
     } else {
-      return GetX<MqttConfigController>(
+      return GetX<ThingConfigController>(
         builder: (_) => ListView.builder(
-          itemCount: _.mqttList.length,
-          itemBuilder: (__, index) => listTile(_.mqttList[index]),
+          itemCount: _.thingList.length,
+          itemBuilder: (__, index) => listTile(_.thingList[index]),
         ),
       );
     }
   }
 
-  Widget listTile(MqttModel mqttModel) {
+  Widget listTile(ThingModel thingModel) {
     return Column(
       children: [
         ListTile(
           enabled: controller.mode == Mode.create ? false : true,
-          leading: Text(mqttModel.isPub ? 'Pub' : 'Sub'),
-          title: Text(mqttModel.topic),
-          subtitle: Text(mqttModel.identifier),
-          //trailing: Text(mqttModel.qos.toString()),
+          //leading: Text(mqttModel.isPub ? 'Pub' : 'Sub'),
+          title: Text(thingModel.id),
+          subtitle: Text(thingModel.identifier),
+          trailing: IconButton(
+              icon: Icon(Icons.miscellaneous_services_sharp),
+              onPressed: () => Get.to(
+                    ChannelConfig(
+                      deviceId: thingModel.id,
+                      uId: controller.user.uid,
+                    ),
+                  )),
           tileColor: Colors.grey[700],
-          onTap: () => handleItemOnTap(mqttModel),
+          onTap: () => handleItemOnTap(thingModel),
         ),
         Divider(height: 3),
       ],
@@ -164,18 +171,20 @@ class MqttConfig extends GetWidget<MqttConfigController> {
     );
   }
 
-  Future<void> handleItemOnTap(MqttModel aMqttModel) async {
+  Future<void> handleItemOnTap(ThingModel thingModel) async {
     final Guid aGUID = Guid.newGuid;
     final idText = aGUID.value;
     switch (controller.mode) {
       case Mode.create:
-        controller.editDetail(controller.getEmptyModel(idText), false);
+        var emptyModel = ThingModel.emptyModel();
+        emptyModel.id = idText;
+        controller.editDetail(emptyModel, false);
         break;
       case Mode.read:
-        controller.editDetail(aMqttModel, true);
+        controller.editDetail(thingModel, true);
         break;
       case Mode.update:
-        controller.editDetail(aMqttModel, false);
+        controller.editDetail(thingModel, false);
         break;
       case Mode.delete:
         var result = await Get.defaultDialog<bool>(
@@ -189,7 +198,7 @@ class MqttConfig extends GetWidget<MqttConfigController> {
           },
         );
         if (result == true) {
-          result = await controller.removeItem(aMqttModel);
+          result = await controller.removeItem(thingModel);
           Get.snackbar(
             result ? 'Confirmation' : 'Error',
             result ? 'Operation suceeded' : 'Operation failed',
@@ -199,49 +208,49 @@ class MqttConfig extends GetWidget<MqttConfigController> {
         }
         break;
       case Mode.copy:
-        aMqttModel.id = idText;
-        controller.editDetail(aMqttModel, false);
+        thingModel.id = idText;
+        controller.editDetail(thingModel, false);
         break;
       case Mode.configure:
-        Storage.storeMqttModel(aMqttModel);
+        Storage.storeMqttModel(thingModel);
         Get.snackbar('Confirmation:', 'Mqtt information stored locally',
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Get.theme.accentColor, //Colors.grey[700],
             duration: Duration(seconds: 5));
         break;
       case Mode.test:
-        controller.mqttManager.disconnect();
-        if (controller.mqttManager.initializeMQTTClient()) {
-          controller.mqttManager.connect();
-          var model = SensorModel(
-            channel: 1,
-            timeStamp: DateTime(2020, 12, 1, 12, 30, 20, 123),
-            valueX: 2,
-            valueY: -3,
-            valueZ: 4,
-            index: 0,
-          );
-          var aList = <SensorModel>[];
-          aList.add(model);
-          if (await controller.mqttManager.isConnectedAsync()) {
-            controller.mqttManager
-                .publish(SensorModelConvert.toJsonEncoded('1000', aList));
-            controller.mqttManager.disconnect();
-            Get.snackbar(
-                'Confirmation:',
-                'Test complete.'
-                    '\nMqtt initialised, message published and connection closed',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Get.theme.accentColor, //Colors.grey[700],
-                duration: Duration(seconds: 8));
-          }
-        } else {
-          Get.snackbar(
-              'Error:', 'Mqtt initialisation failed - configure device',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Get.theme.accentColor, //Colors.grey[700],
-              duration: Duration(seconds: 5));
-        }
+        // controller.mqttManager.disconnect();
+        // if (controller.mqttManager.initializeMQTTClient()) {
+        //   controller.mqttManager.connect();
+        //   var model = SensorModel(
+        //     channel: 1,
+        //     timeStamp: DateTime(2020, 12, 1, 12, 30, 20, 123),
+        //     valueX: 2,
+        //     valueY: -3,
+        //     valueZ: 4,
+        //     index: 0,
+        //   );
+        //   var aList = <SensorModel>[];
+        //   aList.add(model);
+        //   if (await controller.mqttManager.isConnectedAsync()) {
+        //     controller.mqttManager
+        //         .publish(SensorModelConvert.toJsonEncoded('1000', aList));
+        //     controller.mqttManager.disconnect();
+        //     Get.snackbar(
+        //         'Confirmation:',
+        //         'Test complete.'
+        //             '\nMqtt initialised, message published and connection closed',
+        //         snackPosition: SnackPosition.BOTTOM,
+        //         backgroundColor: Get.theme.accentColor, //Colors.grey[700],
+        //         duration: Duration(seconds: 8));
+        //   }
+        // } else {
+        //   Get.snackbar(
+        //       'Error:', 'Mqtt initialisation failed - configure device',
+        //       snackPosition: SnackPosition.BOTTOM,
+        //       backgroundColor: Get.theme.accentColor, //Colors.grey[700],
+        //       duration: Duration(seconds: 5));
+        // }
         break;
       default:
     }
