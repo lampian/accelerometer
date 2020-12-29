@@ -9,14 +9,14 @@ class ButtonGeneral extends StatelessWidget {
     @required this.icon,
     @required this.onPressedCallback,
     @required this.onLongPressedCallback,
-    this.enable,
+    this.enable = true,
   }) : super(key: key);
 
   final Widget label;
   final Icon icon;
   final Function onPressedCallback;
   final Function onLongPressedCallback;
-  var enable = true;
+  bool enable;
 
   @override
   Widget build(BuildContext context) {

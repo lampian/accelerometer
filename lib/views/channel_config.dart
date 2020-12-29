@@ -1,6 +1,8 @@
 // @dart=2.9
 import 'package:accelerometer/controllers/channel_config_controller.dart';
 import 'package:accelerometer/models/channel_model.dart';
+import 'package:accelerometer/utils/storage.dart';
+import 'package:accelerometer/widgets/popup_option.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -8,6 +10,16 @@ class ChannelConfig extends GetWidget<ChannelConfigController> {
   ChannelConfig({this.uId, this.deviceId});
   final String uId;
   final String deviceId;
+
+  final popupItems = [
+    PopupItem(icon: Icons.add, title: 'New'),
+    PopupItem(icon: Icons.list, title: 'View'),
+    PopupItem(icon: Icons.edit, title: 'Edit'),
+    PopupItem(icon: Icons.delete, title: 'Delete'),
+    PopupItem(icon: Icons.pest_control, title: 'Configure'),
+    PopupItem(icon: Icons.science, title: 'Test'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     controller.Initialise(uId, deviceId);
@@ -16,18 +28,26 @@ class ChannelConfig extends GetWidget<ChannelConfigController> {
       builder: (context, orientation) {
         return Scaffold(
           appBar: AppBar(
-            title: Obx(() => Text(controller.title)),
+            title: Obx(() => Text(controller.title + ' channels')),
             actions: [
-              IconButton(
-                onPressed: () => controller.handleMode(),
-                icon: Obx(() => Icon(getIcon())),
-              ),
+              GetX<ChannelConfigController>(builder: (_) => buildPopupOption()),
             ],
           ),
           body: handleOrientation(context),
-          floatingActionButton: Obx(() => fab()),
+          //floatingActionButton: Obx(() => fab()),
         );
       },
+    );
+  }
+
+  Widget buildPopupOption() {
+    return PopupOption(
+      icon: Icon(popupItems[controller.mode.index].icon),
+      callBack: (_) {
+        print('app: ${_.title}');
+        controller.handleMode(_.title);
+      },
+      options: popupItems,
     );
   }
 
@@ -77,47 +97,6 @@ class ChannelConfig extends GetWidget<ChannelConfigController> {
     return Obx(() => Text(controller.title));
   }
 
-  IconData getIcon() {
-    IconData icon;
-    switch (controller.mode) {
-      case ChanMode.create:
-        icon = Icons.add;
-        break;
-      case ChanMode.read:
-        icon = Icons.view_agenda_sharp;
-        break;
-      case ChanMode.update:
-        icon = Icons.edit_sharp;
-        break;
-      case ChanMode.delete:
-        icon = Icons.delete_sharp;
-        break;
-      case ChanMode.copy:
-        icon = Icons.copy_sharp;
-        break;
-      case ChanMode.test:
-        icon = Icons.science_sharp;
-        break;
-      default:
-        icon = Icons.view_agenda_sharp;
-    }
-    return icon;
-  }
-
-  Widget fab() {
-    return Visibility(
-      visible: controller.mode == ChanMode.create ? true : false,
-      child: FloatingActionButton(
-        onPressed: () => handleItemOnTap(ChannelModel.emptyModel()),
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
-        backgroundColor: Colors.grey[600],
-      ),
-    );
-  }
-
   Widget listGroup() {
     return GetX(
       builder: (cntl) {
@@ -127,9 +106,12 @@ class ChannelConfig extends GetWidget<ChannelConfigController> {
           //this causes a rebuild error => controller.mode = ChanMode.create;
           return Text('Nothing to show');
         } else {
-          return ListView.builder(
-            itemCount: controller.channelList.length,
-            itemBuilder: (__, index) => listTile(controller.channelList[index]),
+          return GetX<ChannelConfigController>(
+            builder: (_) => ListView.builder(
+              itemCount: controller.channelList.length,
+              itemBuilder: (__, index) =>
+                  listTile(controller.channelList[index]),
+            ),
           );
         }
       },
@@ -144,7 +126,7 @@ class ChannelConfig extends GetWidget<ChannelConfigController> {
           //leading: Text(mqttModel.isPub ? 'Pub' : 'Sub'),
           title: Text(channelModel.topic),
           subtitle: Text(channelModel.deviceID),
-          //trailing: Text(mqttModel.qos.toString()),
+          trailing: Text(channelModel.channelID),
           tileColor: Colors.grey[700],
           onTap: () => handleItemOnTap(channelModel),
         ),
@@ -157,10 +139,10 @@ class ChannelConfig extends GetWidget<ChannelConfigController> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Text(
-        'Select topic and project for capture \n'
-        'by clicking one of the items',
+        'Select a channel for viewing or editing',
         style: TextStyle(
           fontSize: 18,
+          fontStyle: FontStyle.italic,
         ),
       ),
     );
@@ -169,11 +151,6 @@ class ChannelConfig extends GetWidget<ChannelConfigController> {
   Future<void> handleItemOnTap(ChannelModel aChannelModel) async {
     switch (controller.mode) {
       case ChanMode.create:
-        var emptyModel = ChannelModel.emptyModel();
-        emptyModel.channelID = 'new channel id required';
-        emptyModel.deviceID = controller.deviceId;
-        //controller.editDetail(emptyModel, false);
-        controller.editDetail(emptyModel, false);
         break;
       case ChanMode.read:
         controller.editDetail(aChannelModel, true);
@@ -202,9 +179,12 @@ class ChannelConfig extends GetWidget<ChannelConfigController> {
           );
         }
         break;
-      case ChanMode.copy:
-        aChannelModel.channelID = 'new channel identifier';
-        controller.editDetail(aChannelModel, false);
+      case ChanMode.configure:
+        Storage.storeChannelModel(aChannelModel);
+        Get.snackbar('Confirmation:', 'Mqtt channel information stored locally',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Get.theme.backgroundColor, //Colors.grey[700],
+            duration: Duration(seconds: 5));
         break;
       case ChanMode.test:
         break;

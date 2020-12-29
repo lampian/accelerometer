@@ -22,12 +22,11 @@ class ChannelModelDetail extends GetWidget<ChannelModelDetailController> {
       builder: (context, orientation) {
         return Scaffold(
           appBar: AppBar(
-            title: Text('fix title'), //Obx(() => Text(controller.title)),
+            title: Text(
+                'Channel information'), //Obx(() => Text(controller.title)),
             actions: [
               IconButton(
-                icon: controller.readOnly
-                    ? Icon(Icons.view_agenda_sharp)
-                    : Icon(Icons.edit),
+                icon: controller.readOnly ? Icon(Icons.list) : Icon(Icons.edit),
                 onPressed: () {},
               ),
             ],
@@ -176,19 +175,6 @@ class ChannelModelDetail extends GetWidget<ChannelModelDetailController> {
     );
   }
 
-  //             Padding(
-  //               padding: const EdgeInsets.fromLTRB(16.0, 8.0, 24.0, 8.0),
-  //               child: Row(
-  //                 children: [
-  //                   Expanded(child: Text('Capture only level changes ?')),
-  //                   GetX<ChannelModelDetailController>(
-  //                     builder: (_) {
-  //                       return Checkbox(
-  //                         value: _.onChangeUpdate,
-  //                         onChanged: (value) => value
-  //                             ? _.onChangeUpdate = true
-  //                             : _.onChangeUpdate = false,
-
   Widget textBox({
     TextEditingController ctl,
     String lbl = '',
@@ -236,20 +222,11 @@ class ChannelModelDetail extends GetWidget<ChannelModelDetailController> {
 
   Widget cancelButton() {
     return GetBuilder<ChannelModelDetailController>(
-      builder: (_) => ElevatedButton(
-        child: Text('Cancel'),
-        onPressed: () {
-          Get.back();
-        },
-        style: ElevatedButton.styleFrom(
-          primary: Colors.blueGrey[600],
-          elevation: 15.0,
-          shadowColor: Colors.grey[700],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
-            side: BorderSide(color: Get.theme.accentColor), //Colors.grey[700]),
-          ),
-        ),
+      builder: (_) => ButtonGeneral(
+        label: Text('Cancel'),
+        icon: Icon(Icons.cancel),
+        onPressedCallback: () => Get.back(),
+        onLongPressedCallback: () => Get.back(),
       ),
     );
   }
@@ -276,33 +253,6 @@ class ChannelModelDetail extends GetWidget<ChannelModelDetailController> {
           }
         },
       ),
-      //(_) => ElevatedButton(
-      //   child: Text('Save and return'),
-
-      //   onPressed: () async {
-      //     if (await controller.saveChannel()) {
-      //       Get.back();
-      //     } else {
-      //       print('app: channelModelDetail - save to firestore failed');
-      //       Get.snackbar(
-      //         'Error',
-      //         'Save operation failed,'
-      //             ' check data entered and connection',
-      //         snackPosition: SnackPosition.BOTTOM,
-      //         snackStyle: SnackStyle.GROUNDED,
-      //       );
-      //     }
-      //   },
-      //   style: ElevatedButton.styleFrom(
-      //     primary: Colors.blueGrey[600],
-      //     elevation: 15.0,
-      //     shadowColor: Colors.grey[700],
-      //     shape: RoundedRectangleBorder(
-      //       borderRadius: BorderRadius.circular(12.0),
-      //       side: BorderSide(color: Get.theme.accentColor), //Colors.grey[700]),
-      //     ),
-      //   ),
-      // ),
     );
   }
 }

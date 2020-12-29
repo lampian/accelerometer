@@ -16,7 +16,7 @@ class ThingConfigController extends GetxController {
   final _thingList = Rx<List<ThingModel>>();
   List<ThingModel> get thingList => _thingList.value;
 
-  final _title = 'title'.obs;
+  final _title = 'IoT device'.obs;
   String get title => this._title.value;
   set title(String value) => this._title.value = value;
 
@@ -41,28 +41,32 @@ class ThingConfigController extends GetxController {
     _thingList.bindStream(Database().userThingStream(user?.uid ?? ''));
   }
 
-  void handleMode() {
-    switch (mode) {
-      case Mode.create:
+  void handleMode(String retStr) {
+    switch (retStr) {
+      case 'New':
+        mode = Mode.create;
+        var emptyModel = ThingModel.emptyModel();
+        emptyModel.id = 'fix id ';
+        editDetail(emptyModel, false);
         mode = Mode.read;
         break;
-      case Mode.read:
+      case 'View':
+        mode = Mode.read;
+        break;
+      case 'Edit':
         mode = Mode.update;
         break;
-      case Mode.update:
+      case 'Delete':
         mode = Mode.delete;
         break;
-      case Mode.delete:
+      case 'Copy':
         mode = Mode.copy;
         break;
-      case Mode.copy:
+      case 'Configure':
         mode = Mode.configure;
         break;
-      case Mode.configure:
+      case 'Test':
         mode = Mode.test;
-        break;
-      case Mode.test:
-        mode = Mode.create;
         break;
 
       default:

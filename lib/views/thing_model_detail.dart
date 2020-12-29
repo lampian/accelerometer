@@ -21,9 +21,7 @@ class ThingModelDetail extends GetWidget<ThingModelDetailController> {
             title: Text('Mqtt Model data'), //Obx(() => Text(controller.title)),
             actions: [
               IconButton(
-                icon: controller.readOnly
-                    ? Icon(Icons.view_agenda_sharp)
-                    : Icon(Icons.edit),
+                icon: controller.readOnly ? Icon(Icons.list) : Icon(Icons.edit),
                 onPressed: () {},
               ),
             ],

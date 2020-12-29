@@ -54,7 +54,7 @@ class ChannelModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = Map<String, dynamic>();
     data['deviceID'] = this.deviceID;
     data['channelID'] = this.channelID;
     data['description'] = this.description;

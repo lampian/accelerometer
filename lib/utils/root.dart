@@ -3,6 +3,7 @@ import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/controllers/channel_config_controller.dart';
 import 'package:accelerometer/controllers/channel_model_detail_controller.dart';
 import 'package:accelerometer/controllers/home_controller.dart';
+import 'package:accelerometer/controllers/storage_manager_controller.dart';
 import 'package:accelerometer/controllers/thing_config_controller.dart';
 import 'package:accelerometer/controllers/thing_model_detail_controller.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
@@ -38,6 +39,7 @@ class Root extends GetWidget<AuthController> {
           Get.put<ChannelModelDetailController>(ChannelModelDetailController());
           Get.put<ThingModelDetailController>(ThingModelDetailController());
           Get.put<ThingConfigController>(ThingConfigController());
+          Get.put<StorageManagerController>(StorageManagerController());
           return Home();
         } else {
           return Login();

@@ -4,11 +4,21 @@ import 'package:accelerometer/models/thing_model.dart';
 import 'package:accelerometer/services/mqtt_manager.dart';
 import 'package:accelerometer/utils/storage.dart';
 import 'package:accelerometer/views/channel_config.dart';
+import 'package:accelerometer/widgets/popup_option.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_guid/flutter_guid.dart';
 import 'package:get/get.dart';
 
 class ThingConfig extends GetWidget<ThingConfigController> {
+  final popupItems = [
+    PopupItem(icon: Icons.add, title: 'New'),
+    PopupItem(icon: Icons.list, title: 'View'),
+    PopupItem(icon: Icons.edit, title: 'Edit'),
+    PopupItem(icon: Icons.delete, title: 'Delete'),
+    PopupItem(icon: Icons.copy, title: 'Copy'),
+    PopupItem(icon: Icons.bug_report, title: 'Configure'),
+    PopupItem(icon: Icons.science, title: 'Test'),
+  ];
   @override
   Widget build(BuildContext context) {
     controller.mqttManager = Get.find<MqttManager>();
@@ -18,16 +28,24 @@ class ThingConfig extends GetWidget<ThingConfigController> {
           appBar: AppBar(
             title: Obx(() => Text(controller.title)),
             actions: [
-              IconButton(
-                onPressed: () => controller.handleMode(),
-                icon: Obx(() => Icon(getIcon())),
-              ),
+              GetX<ThingConfigController>(builder: (_) => buildPopupOption()),
             ],
           ),
           body: handleOrientation(context),
-          floatingActionButton: Obx(() => fab()),
+          //floatingActionButton: Obx(() => fab()),
         );
       },
+    );
+  }
+
+  Widget buildPopupOption() {
+    return PopupOption(
+      icon: Icon(popupItems[controller.mode.index].icon),
+      callBack: (_) {
+        print('app: ${_.title}');
+        controller.handleMode(_.title);
+      },
+      options: popupItems,
     );
   }
 
@@ -75,50 +93,6 @@ class ThingConfig extends GetWidget<ThingConfigController> {
 
   Widget getTitle() {
     return Obx(() => Text(controller.title));
-  }
-
-  IconData getIcon() {
-    IconData icon;
-    switch (controller.mode) {
-      case Mode.create:
-        icon = Icons.add;
-        break;
-      case Mode.read:
-        icon = Icons.view_agenda_sharp;
-        break;
-      case Mode.update:
-        icon = Icons.edit_sharp;
-        break;
-      case Mode.delete:
-        icon = Icons.delete_sharp;
-        break;
-      case Mode.copy:
-        icon = Icons.copy_sharp;
-        break;
-      case Mode.configure:
-        icon = Icons.developer_board;
-        break;
-      case Mode.test:
-        icon = Icons.science_sharp;
-        break;
-      default:
-        icon = Icons.view_agenda_sharp;
-    }
-    return icon;
-  }
-
-  Widget fab() {
-    return Visibility(
-      visible: controller.mode == Mode.create ? true : false,
-      child: FloatingActionButton(
-        onPressed: () => handleItemOnTap(ThingModel.emptyModel()),
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
-        backgroundColor: Colors.grey[600],
-      ),
-    );
   }
 
   Widget listGroup() {
@@ -176,9 +150,6 @@ class ThingConfig extends GetWidget<ThingConfigController> {
     final idText = aGUID.value;
     switch (controller.mode) {
       case Mode.create:
-        var emptyModel = ThingModel.emptyModel();
-        emptyModel.id = idText;
-        controller.editDetail(emptyModel, false);
         break;
       case Mode.read:
         controller.editDetail(thingModel, true);
@@ -213,9 +184,9 @@ class ThingConfig extends GetWidget<ThingConfigController> {
         break;
       case Mode.configure:
         Storage.storeMqttModel(thingModel);
-        Get.snackbar('Confirmation:', 'Mqtt information stored locally',
+        Get.snackbar('Confirmation:', 'Mqtt device information stored locally',
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Get.theme.accentColor, //Colors.grey[700],
+            backgroundColor: Get.theme.backgroundColor, //Colors.grey[700],
             duration: Duration(seconds: 5));
         break;
       case Mode.test:

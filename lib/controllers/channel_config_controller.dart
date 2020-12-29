@@ -10,7 +10,7 @@ import 'package:get/get.dart';
 
 import 'auth_controller.dart';
 
-enum ChanMode { create, read, update, delete, copy, test }
+enum ChanMode { create, read, update, delete, configure, test }
 
 class ChannelConfigController extends GetxController {
   final _channelList = Rx<List<ChannelModel>>();
@@ -50,32 +50,39 @@ class ChannelConfigController extends GetxController {
     _channelList.bindStream(Database().channelStreamFromUser(userId, deviceId));
   }
 
-  void handleMode() {
-    switch (mode) {
-      case ChanMode.create:
+  void handleMode(String retStr) {
+    switch (retStr) {
+      case 'View':
         mode = ChanMode.read;
         break;
-      case ChanMode.read:
+      case 'Edit':
         mode = ChanMode.update;
         break;
-      case ChanMode.update:
+      case 'Delete':
         mode = ChanMode.delete;
         break;
-      case ChanMode.delete:
-        mode = ChanMode.copy;
-        break;
-      case ChanMode.copy:
-        mode = ChanMode.test;
-        break;
-      case ChanMode.test:
+      // case ChanMode.delete:
+      //   mode = ChanMode.copy;
+      //   break;
+      // case ChanMode.copy:
+      //   mode = ChanMode.test;
+      //   break;
+      case 'New':
         mode = ChanMode.create;
+        var emptyModel = ChannelModel.emptyModel();
+        emptyModel.channelID = 'new channel id required';
+        emptyModel.deviceID = deviceId;
+        editDetail(emptyModel, false);
+        mode = ChanMode.read;
         break;
-
+      case 'Configure':
+        mode = ChanMode.configure;
+        break;
       default:
         mode = ChanMode.read;
     }
     title = title + '>';
-    update();
+    //update();
   }
 
   void editDetail(ChannelModel model, bool readOnly) {

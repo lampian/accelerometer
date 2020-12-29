@@ -1,6 +1,7 @@
 // @dart=2.9
 import 'package:accelerometer/controllers/auth_controller.dart';
 import 'package:accelerometer/utils/root.dart';
+import 'package:accelerometer/views/storage_management.dart';
 import 'package:accelerometer/views/thing_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -48,6 +49,10 @@ class HomeDrawer extends StatelessWidget {
                 Get.changeTheme(ThemeData.dark());
               }
             },
+          ),
+          ListTile(
+            title: Text('Mange local storage'),
+            onTap: () => Get.to(StorageManagement()),
           ),
           ListTile(
             title: Text('Sign out'),
