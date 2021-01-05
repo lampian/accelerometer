@@ -1,4 +1,4 @@
-// @dart=2.9
+//@dart=2.9
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChannelModel {
@@ -72,6 +72,23 @@ class ChannelModel {
     data['ioInit'] = this.ioInit;
     return data;
   }
+
+  ChannelModel.fromJson(Map<String, dynamic> json)
+      : channelID = json['channelID'] as String,
+        description = json['description'] as String,
+        deviceID = json['deviceID'] as String,
+        duration = json['duration'] as String,
+        ioInit = json['ioInit'] as String,
+        ioType = json['ioType'] as String,
+        onChangeUpdate = json['onChangeUpdate'] as bool,
+        pub = json['pub'] as String,
+        qos = json['qos'] as String,
+        sampleRate = json['sampleRate'] as String,
+        sub = json['sub'] as String,
+        topic = json['topic'] as String,
+        trigSource = json['trigSource'] as String,
+        trigStart = json['trigStart'] as String,
+        trigStop = json['trigStop'] as String;
 
   static ChannelModel emptyModel() {
     return ChannelModel(

@@ -8,18 +8,19 @@ import 'package:get_storage/get_storage.dart';
 class Storage {
   static void storeMqttModel(ThingModel aModel) {
     final box = GetStorage();
-    //box.erase();
-    box.write('id', aModel.id);
-    box.write('host', aModel.host);
-    box.write('port', aModel.port);
-    box.write('identifier', aModel.identifier);
-    box.write('keepAlivePeriod', aModel.keepAlivePeriod);
-    box.write('secure', aModel.secure);
-    //box.save();
+    var aStr = jsonEncode(aModel);
+    box.write('device', aStr);
   }
 
   static ThingModel retrieveMqttModel() {
     final box = GetStorage();
+    String aVal = box.read('device').toString();
+    try {
+      var aMap = jsonDecode(aVal);
+      return ThingModel.fromJson(aMap as Map<String, dynamic>);
+    } catch (e) {
+      ThingModel.emptyModel();
+    }
     return ThingModel(
       id: box.read('id'),
       host: box.read('host'),
@@ -32,49 +33,19 @@ class Storage {
 
   static void storeChannelModel(ChannelModel aModel) {
     final box = GetStorage();
-    var aStr = aModel.toJson();
+    var aStr = jsonEncode(aModel);
     box.write('channel', aStr);
-    //box.erase();
-    // box.write('channelID', aModel.channelID);
-    // box.write('description', aModel.description);
-    // box.write('deviceID', aModel.deviceID);
-    // box.write('duration', aModel.duration);
-    // box.write('ioInit', aModel.ioInit);
-    // box.write('ioType', aModel.ioType);
-    // box.write('onChangeUpdate', aModel.onChangeUpdate.toString());
-    // box.write('pub', aModel.pub);
-    // box.write('qos', aModel.qos);
-    // box.write('sampleRate', aModel.sampleRate);
-    // box.write('sub', aModel.sub);
-    // box.write('topic', aModel.topic);
-    // box.write('trigSource', aModel.trigSource);
-    // box.write('trigStart', aModel.trigStart);
-    // box.write('trigStop', aModel.trigStop);
-    //box.save();
   }
 
   static ChannelModel retrieveChannelModel() {
     final box = GetStorage();
-    String aStr = box.read('channel').toString();
-    var aMap = jsonDecode(aStr);
-
-    return ChannelModel(
-      channelID: aMap['channelID'] as String,
-      description: aMap['description'] as String,
-      deviceID: aMap['deviceID'] as String,
-      duration: aMap['duration'] as String,
-      ioInit: aMap['ioInit'] as String,
-      ioType: aMap['ioType'] as String,
-      onChangeUpdate: aMap['onChangeUpdate'] as bool,
-      pub: aMap['pub'] as String,
-      qos: aMap['qos'] as String,
-      sampleRate: aMap['sampleRate'] as String,
-      sub: aMap['sub'] as String,
-      topic: aMap['topic'] as String,
-      trigSource: aMap['trigSource'] as String,
-      trigStart: aMap['trigStart'] as String,
-      trigStop: aMap['trigStop'] as String,
-    );
+    String aVal = box.read('channel').toString();
+    try {
+      var aMap = jsonDecode(aVal);
+      return ChannelModel.fromJson(aMap as Map<String, dynamic>);
+    } catch (e) {
+      return ChannelModel.emptyModel();
+    }
   }
 
   static String cleanMapValue(String val) {
