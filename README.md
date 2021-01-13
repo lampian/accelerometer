@@ -1,16 +1,19 @@
-# accelerometer
+# Accelerometer:
 
-A new Flutter project.
+A demonstrator project that captures the acceleration of a mobile device in the z, y and z direction.
+The device acts as an IoT device that can publish data in the cloud using MQTT protocol.
+A simple user interface is provided that allows the user to set the capture rate and the start and stop condition of capture.
+Start and stop conditions can be user entry, signal strength or time elapsed.
+The capture data can be viewed on screen with an elementry zoom function or transfered to cloud storage.
+The application interfaces with the Google Firebase, IoT Core, PubSub, Functions and BigQuery modules tomanage user account and data storage.
+A second application has been developed to extract the display the sensor data.
 
-## Getting Started
+<img src="/assets/images/1.png" width="300">                
+<img src="/assets/images/2.png" width="300">
+<img src="/assets/images/3.png" width="300">
+<img src="/assets/images/4.png" width="300">
+<img src="/assets/images/5.png" width="300">
+<img src="/assets/images/6.png" width="300">
+<img src="/assets/images/7.png" width="300">
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
